@@ -9,6 +9,7 @@ import { SecureNativeOptions } from './securenative-options';
 import { ActionResult } from './action-result';
 import { FetchOptions } from './fetch-options';
 import { promiseTimeout } from './utils';
+import { version } from './../package.json';
 
 export default class EventManager {
   private defaultFetchOptions: FetchOptions;
@@ -21,7 +22,8 @@ export default class EventManager {
       options: {
         method: 'post',
         headers: {
-          'User-Agent': 'SecureNative-Node',
+          'User-Agent': 'SecureNative-node',
+          'SN-Version': version,
           'Authorization': options.apiKey
         }
       }

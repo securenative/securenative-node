@@ -7,6 +7,8 @@ export type EventOptions = {
   remoteIp?: string;
   user?: {
     id: string;
+    name?: string;
+    email?: string;
   }
   device?: {}
 }
