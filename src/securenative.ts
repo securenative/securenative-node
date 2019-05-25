@@ -7,24 +7,28 @@ import EventManager from './event-manager';
 import { ActionResult } from './action-result';
 import Middleware from './middleware';
 
+const defaultOptions: SecureNativeOptions = {
+  apiKey: '',
+  apiUrl: 'https://api.securenative.com/v1/collector',
+  interval: 1000,
+  maxEvents: 1000,
+  timeout: 1500,
+  autoSend: true
+};
+
 export default class SecureNative {
-  private eventManager: EventManager
+  private eventManager: EventManager;
+  private options: SecureNativeOptions;
   public middleware: Middleware;
   public apiKey: string;
 
-  constructor(private options: SecureNativeOptions = {
-    apiKey: "",
-    apiUrl: 'https://api.securenative.com/v1/collector',
-    interval: 1000,
-    maxEvents: 1000,
-    timeout: 1500,
-    autoSend: true
-  }) {
+  constructor(options: SecureNativeOptions = defaultOptions) {
     if (!options.apiKey) {
       throw new Error('You must pass your SecureNative api key');
     }
+    this.options = Object.assign({}, defaultOptions, options);
     this.apiKey = this.apiKey;
-    this.eventManager = new EventManager(options);
+    this.eventManager = new EventManager(this.options);
     this.middleware = new Middleware(this);
   }
 

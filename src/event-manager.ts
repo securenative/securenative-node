@@ -90,7 +90,6 @@ export default class EventManager {
   private async sendEvents() {
     if (this.events.length > 0 && this.sendEnabled) {
       const fetchEvent = this.events.shift();
-
       await fetch(fetchEvent.url, fetchEvent.options).catch((err) => {
         this.events.unshift(fetchEvent);
         const backOff = Math.ceil(Math.random() * 10) * 1000;
