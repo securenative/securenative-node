@@ -1,1 +1,1 @@
-export type ActionType = 'allow' | 'block' | 'mfa';
+export type ActionType = 'allow' | 'block' | 'redirect' | 'mfa';

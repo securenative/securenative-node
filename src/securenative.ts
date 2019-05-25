@@ -5,9 +5,12 @@ import { Event } from './event';
 import { EventOptions } from './event-options';
 import EventManager from './event-manager';
 import { ActionResult } from './action-result';
+import Middleware from './middleware';
 
 export default class SecureNative {
   private eventManager: EventManager
+  public middleware: Middleware;
+  public apiKey: string;
 
   constructor(private options: SecureNativeOptions = {
     apiKey: "",
@@ -20,7 +23,9 @@ export default class SecureNative {
     if (!options.apiKey) {
       throw new Error('You must pass your SecureNative api key');
     }
+    this.apiKey = this.apiKey;
     this.eventManager = new EventManager(options);
+    this.middleware = new Middleware(this);
   }
 
   public track(opts: EventOptions, req?: Request) {

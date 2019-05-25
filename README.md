@@ -29,6 +29,8 @@ const secureNative = SecureNative({ apiKey: 'YOUR_API_KEY' });
 
 ```js
 import { SecureNative, EventTypes } from '@securenative/sdk';
+or
+const { SecureNative, EventTypes } = require('@securenative/sdk'); // if your using ES5
 
 const secureNative = SecureNative({ apiKey: 'YOUR_API_KEY' });
 
@@ -40,4 +42,14 @@ secureNative.track({
       id: '12345'
     }
 });
+```
+
+## WebHook
+
+Use ```verifyWebhook``` middleware to ensure that webhook is comming from SecureNative
+
+```js
+app.post("/securewebhook", securenative.middleware.verifyWebhook, (req, res) => {
+
+}
 ```
