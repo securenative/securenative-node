@@ -25,7 +25,7 @@ const secureNative = SecureNative({ apiKey: 'YOUR_API_KEY' });
 | timeout | number | true | 1500 | API call timeout in ms|
 | autoSend | Boolean | true | true | Should api auto send the events|
 
-## event tracking
+## Event tracking
 
 ```js
 import { SecureNative, EventTypes } from '@securenative/sdk';
