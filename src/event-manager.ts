@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import fetch, { FetchError } from 'node-fetch';
+import fetch from 'node-fetch';
 import { EventOptions } from './event-options';
 import EventTypes from './event-types';
 import { Request } from 'express';
@@ -56,7 +56,7 @@ export default class EventManager {
 
   public async sendSync(event: Event, requestUrl: string): Promise<ActionResult> {
     const eventOptions = Object.assign({}, this.defaultFetchOptions.options, {
-      body: event
+      body: JSON.stringify(event)
     });
 
     try {
@@ -78,7 +78,7 @@ export default class EventManager {
     }
 
     const eventOptions = Object.assign({}, this.defaultFetchOptions.options, {
-      body: event
+      body: JSON.stringify(event)
     });
 
     this.events.push({
