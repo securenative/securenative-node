@@ -17,5 +17,7 @@ vendor/
 launch.json
 
 node_modules/
+dist/
+coverage/
 
 .idea

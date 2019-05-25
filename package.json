@@ -3,17 +3,47 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "private": false,
+  "keywords": [
+    "securenative",
+    "sdk",
+    "agent"
+  ],
+  "author": "SecureNative",
+  "license": "MIT",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "tsc -w",
+    "build": "tsc",
+    "debug-inspector": "node-debug index.ts --debug-brk",
+    "test": "NODE_ENV=test mocha -r ts-node/register src/**/*.ts",
+    "coverage": "istanbul cover _mocha $(find ./src -name \"*.spec.ts\" -not -path \"./node_modules/*\")"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "cookie": "^0.3.1",
     "ip": "^1.1.5",
-    "request": "^2.88.0",
-    "request-promise": "^4.2.4",
+    "node-fetch": "^2.6.0",
     "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/assert": "^1.4.2",
+    "@types/chai": "^4.1.7",
+    "@types/chai-as-promised": "^7.1.0",
+    "@types/cookie": "^0.3.3",
+    "@types/express": "^4.16.1",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^12.0.2",
+    "@types/node-fetch": "^2.3.4",
+    "@types/sinon": "^7.0.11",
+    "@types/uuid": "^3.4.4",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "istanbul": "^0.4.5",
+    "mocha": "^6.1.4",
+    "sinon": "^7.3.2",
+    "ts-node": "^8.1.1",
+    "tslint": "^5.16.0",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-config-standard": "^8.0.1",
+    "typescript": "^3.4.5"
   }
 }

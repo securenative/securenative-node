@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "rootDir": ".",
+    "outDir": "dist",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "noEmitHelpers": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "sourceMap": false
+  },
+  "compileOnSave": true,
+  "buildOnSave": true,
+  "exclude": ["**/*.spec.ts", "dist", "node_modules"]
+}
