@@ -9,7 +9,7 @@ import Middleware from './middleware';
 
 const defaultOptions: SecureNativeOptions = {
   apiKey: '',
-  apiUrl: 'https://api.securenative.com/v1/collector',
+  apiUrl: 'https://api.securenative.com/collector',
   interval: 1000,
   maxEvents: 1000,
   timeout: 1500,
@@ -39,13 +39,13 @@ export default class SecureNative {
   }
 
   public verify(opts: EventOptions, req?: Request): Promise<ActionResult> {
-    const requestUrl = `${this.options.apiUrl}/v1/verify`;
+    const requestUrl = `${this.options.apiUrl}/api/v1/verify`;
     const event: Event = this.eventManager.buildEvent(req, opts);
     return this.eventManager.sendSync(event, requestUrl);
   }
 
   public flow(flowId: number, opts: EventOptions, req?: Request): Promise<ActionResult> {
-    const requestUrl = `${this.options.apiUrl}/v1/flow/${flowId}`;
+    const requestUrl = `${this.options.apiUrl}/api/v1/flow/${flowId}`;
     const event: Event = this.eventManager.buildEvent(req, opts);
     return this.eventManager.sendSync(event, requestUrl);
   }
