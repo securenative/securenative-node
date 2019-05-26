@@ -11,9 +11,14 @@
     "noEmitHelpers": false,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "sourceMap": false
+    "sourceMap": false,
+    "declaration": true
   },
   "compileOnSave": true,
   "buildOnSave": true,
-  "exclude": ["**/*.spec.ts", "dist", "node_modules"]
+  "exclude": [
+    "**/*.spec.ts",
+    "dist",
+    "node_modules"
+  ]
 }

@@ -1,13 +1,15 @@
 {
   "name": "@securenative/sdk",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "private": false,
   "keywords": [
     "securenative",
     "sdk",
-    "agent"
+    "agent",
+    "security-platform"
   ],
   "author": "SecureNative",
   "license": "MIT",
@@ -16,7 +18,8 @@
     "build": "tsc",
     "debug-inspector": "node-debug index.ts --debug-brk",
     "test": "NODE_ENV=test mocha -r ts-node/register src/**/*.ts",
-    "coverage": "istanbul cover _mocha $(find ./src -name \"*.spec.ts\" -not -path \"./node_modules/*\")"
+    "coverage": "istanbul cover _mocha $(find ./src -name \"*.spec.ts\" -not -path \"./node_modules/*\")",
+    "publish": "npm publish --access public"
   },
   "dependencies": {
     "cookie": "^0.3.1",
