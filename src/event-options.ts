@@ -1,4 +1,5 @@
 import EventTypes from "./event-types";
+import { KeyValuePair } from "./key-value-pair";
 
 export type EventOptions = {
   ip: string;
@@ -10,5 +11,6 @@ export type EventOptions = {
     name?: string;
     email?: string;
   }
-  device?: {}
+  device?: {};
+  params?: Array<KeyValuePair>;
 }

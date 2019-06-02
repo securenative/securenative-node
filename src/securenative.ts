@@ -7,6 +7,7 @@ import EventManager from './event-manager';
 import { ActionResult } from './action-result';
 import Middleware from './middleware';
 
+const MAX_CUSTOM_PARAMS = 6;
 const defaultOptions: SecureNativeOptions = {
   apiKey: '',
   apiUrl: 'https://api.securenative.com/collector/api/v1',
@@ -33,6 +34,10 @@ export default class SecureNative {
   }
 
   public track(opts: EventOptions, req?: Request) {
+    if (opts && opts.params && opts.params.length > MAX_CUSTOM_PARAMS) {
+      throw new Error(`You can only specify maximum of ${MAX_CUSTOM_PARAMS} params`);
+    }
+
     const requestUrl = `${this.options.apiUrl}/track`;
     const event: Event = this.eventManager.buildEvent(req, opts);
     this.eventManager.sendAsync(event, requestUrl);

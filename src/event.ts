@@ -1,3 +1,5 @@
+import { KeyValuePair } from "./key-value-pair";
+
 export type Event = {
   eventType: string;
   cid: string;
@@ -8,9 +10,10 @@ export type Event = {
   userAgent: string;
   user: {
     id: string
-  },
+  };
   ts: number;
   device: {
 
-  }
+  };
+  params?: Array<KeyValuePair>;
 }
