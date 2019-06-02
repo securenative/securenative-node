@@ -74,7 +74,7 @@ export default class EventManager {
 
   public sendAsync(event: Event, requestUrl: string) {
     if (this.events.length >= this.options.maxEvents) {
-      this.events.unshift();
+      this.events.shift();
     }
 
     const eventOptions = Object.assign({}, this.defaultFetchOptions.options, {
