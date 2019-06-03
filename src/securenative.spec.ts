@@ -37,7 +37,7 @@ describe('SecureNative', () => {
   });
 
   it('Should return defaut response on failure', async () => {
-    const snOptions: SecureNativeOptions = { apiKey: 'SECURENATIVE_API_KEY', autoSend: false };
+    const snOptions: SecureNativeOptions = { apiKey: 'SECURENATIVE_API_KEY', autoSend: false, apiUrl: 'https://localhost' };
     const secureNative = new SecureNative(snOptions);
 
     const res = await secureNative.verify({

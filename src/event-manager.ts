@@ -50,7 +50,8 @@ export default class EventManager {
         id: 'anonymous'
       },
       ts: Date.now(),
-      device: opts.device || {}
+      device: opts.device || {},
+      params: opts.params
     }
   }
 
