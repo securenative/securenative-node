@@ -23,12 +23,12 @@ export default class SecureNative {
   public middleware: Middleware;
   public apiKey: string;
 
-  constructor(options: SecureNativeOptions = defaultOptions) {
-    if (!options.apiKey) {
+  constructor(apiKey: string, options: SecureNativeOptions = defaultOptions) {
+    if (!apiKey) {
       throw new Error('You must pass your SecureNative api key');
     }
+    options.apiKey = this.apiKey;
     this.options = Object.assign({}, defaultOptions, options);
-    this.apiKey = this.apiKey;
     this.eventManager = new EventManager(this.options);
     this.middleware = new Middleware(this);
   }
