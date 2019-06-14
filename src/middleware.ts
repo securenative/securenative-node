@@ -1,26 +1,30 @@
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { cookieIdFromRequest, clientIpFromRequest, userAgentFromRequest } from './utils';
 import SecureNative from './securenative';
 
-const HEADER_KEY = 'x-securenative';
+const SIGNATURE_KEY = 'x-securenative';
 
 export default class Middleware {
   constructor(private secureNative: SecureNative) { }
 
   verifyWebhook(req: Request, res: Response, next: NextFunction) {
-    const payload = JSON.stringify(req.body);
-    if (!payload) {
-      return next('Request body is empty');
+    const { body = null, headers = null } = req;
+
+    if (!body || !headers) {
+      return res.status(400).send('Bad Request');
     }
 
+    const signature = headers[SIGNATURE_KEY] || '';
+    // calculating signature
     const hmac = createHmac('sha512', this.secureNative.apiKey);
-    const digest = hmac.update(payload).digest('hex');
-    const checksum = req.headers[HEADER_KEY];
+    const comparison_signature = hmac.update(JSON.stringify(body)).digest('hex');
 
-    if (!checksum || !digest || checksum !== digest) {
-      return next(`Request body digest (${digest}) did not match ${HEADER_KEY} (${checksum})`);
+    // comparing signatures
+    if (!timingSafeEqual(Buffer.from(signature.toString()), Buffer.from(comparison_signature))) {
+      return res.status(401).send('Mismatched signatures');
     }
+
     return next();
   }
 
