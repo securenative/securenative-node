@@ -29,6 +29,8 @@ export default class SecureNative {
     this.options = Object.assign({}, defaultOptions, options);
     this.eventManager = new EventManager(this.options);
     this.middleware = new Middleware(this);
+    this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware); 
+    this.middleware.verifyRequest = this.middleware.verifyRequest.bind(this.middleware); 
   }
 
   public track(opts: EventOptions, req?: Request) {

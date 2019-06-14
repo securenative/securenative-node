@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { cookieIdFromRequest, clientIpFromRequest, userAgentFromRequest } from './utils';
 import SecureNative from './securenative';
 
-const HEADER_KEY = 'X-SECURENATIVE';
+const HEADER_KEY = 'x-securenative';
 
 export default class Middleware {
   constructor(private secureNative: SecureNative) { }
@@ -14,8 +14,8 @@ export default class Middleware {
       return next('Request body is empty');
     }
 
-    const hmac = createHmac('sha1', this.secureNative.apiKey);
-    const digest = 'sha1=' + hmac.update(payload).digest('hex');
+    const hmac = createHmac('sha512', this.secureNative.apiKey);
+    const digest = hmac.update(payload).digest('hex');
     const checksum = req.headers[HEADER_KEY];
 
     if (!checksum || !digest || checksum !== digest) {
