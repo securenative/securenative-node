@@ -9,7 +9,6 @@ import Middleware from './middleware';
 
 const MAX_CUSTOM_PARAMS = 6;
 const defaultOptions: SecureNativeOptions = {
-  apiKey: '',
   apiUrl: 'https://api.securenative.com/collector/api/v1',
   interval: 1000,
   maxEvents: 1000,
@@ -27,7 +26,7 @@ export default class SecureNative {
       throw new Error('You must pass your SecureNative api key');
     }
     this.options = Object.assign({}, defaultOptions, options);
-    this.eventManager = new EventManager(this.options);
+    this.eventManager = new EventManager(apiKey, this.options);
     this.middleware = new Middleware(this);
     this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware); 
     this.middleware.verifyRequest = this.middleware.verifyRequest.bind(this.middleware); 
