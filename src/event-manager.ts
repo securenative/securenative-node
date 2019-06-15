@@ -16,7 +16,7 @@ export default class EventManager {
   private events: Array<FetchOptions> = [];
   private sendEnabled: Boolean = true;
 
-  constructor(private options: SecureNativeOptions) {
+  constructor(apiKey: string, private options: SecureNativeOptions) {
     this.defaultFetchOptions = {
       url: options.apiUrl || 'https://api.securenative.com/v1/collector',
       options: {
@@ -24,7 +24,7 @@ export default class EventManager {
         headers: {
           'User-Agent': 'SecureNative-node',
           'SN-Version': version,
-          'Authorization': options.apiKey
+          'Authorization': apiKey
         }
       }
     };

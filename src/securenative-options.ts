@@ -1,5 +1,4 @@
 export type SecureNativeOptions = {
-  apiKey?: string;
   apiUrl?: string;
   interval?: number;
   maxEvents?: number;
