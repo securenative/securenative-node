@@ -48,8 +48,8 @@ describe('SecureNative', () => {
     });
 
     expect(res).to.not.be.null;
-    expect(res.action).to.be.equal("allow", 'Wrong bypass action');
-    expect(res.riskScore).to.be.equal(0, 'Wrong bypass risk score');
+    expect(res.riskLevel).to.be.equal("low", 'Wrong bypass action');
+    expect(res.score).to.be.equal(0, 'Wrong bypass risk score');
     expect(res.triggers.length).to.be.equal(0, 'Wrong bypass triggers amount');
   });
 });

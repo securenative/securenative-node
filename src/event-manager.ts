@@ -6,7 +6,7 @@ import { Request } from 'express';
 import { Event } from './event';
 import { cookieIdFromRequest, clientIpFromRequest, remoteIpFromRequest, userAgentFromRequest } from './utils';
 import { SecureNativeOptions } from './securenative-options';
-import { ActionResult } from './action-result';
+import { RiskResult } from './risk-result';
 import { FetchOptions } from './fetch-options';
 import { promiseTimeout } from './utils';
 import { version } from './../package.json';
@@ -55,7 +55,7 @@ export default class EventManager {
     }
   }
 
-  public async sendSync(event: Event, requestUrl: string): Promise<ActionResult> {
+  public async sendSync(event: Event, requestUrl: string): Promise<RiskResult> {
     const eventOptions = Object.assign({}, this.defaultFetchOptions.options, {
       body: JSON.stringify(event)
     });
@@ -66,8 +66,8 @@ export default class EventManager {
       return body;
     } catch (ex) {
       return {
-        action: "allow",
-        riskScore: 0,
+        riskLevel: "low",
+        score: 0,
         triggers: []
       }
     }

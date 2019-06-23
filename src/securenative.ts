@@ -4,7 +4,7 @@ import { SecureNativeOptions } from './securenative-options';
 import { Event } from './event';
 import { EventOptions } from './event-options';
 import EventManager from './event-manager';
-import { ActionResult } from './action-result';
+import { RiskResult } from './risk-result';
 import Middleware from './middleware';
 
 const MAX_CUSTOM_PARAMS = 6;
@@ -42,13 +42,13 @@ export default class SecureNative {
     this.eventManager.sendAsync(event, requestUrl);
   }
 
-  public verify(opts: EventOptions, req?: Request): Promise<ActionResult> {
+  public verify(opts: EventOptions, req?: Request): Promise<RiskResult> {
     const requestUrl = `${this.options.apiUrl}/verify`;
     const event: Event = this.eventManager.buildEvent(req, opts);
     return this.eventManager.sendSync(event, requestUrl);
   }
 
-  public flow(flowId: number, opts: EventOptions, req?: Request): Promise<ActionResult> {
+  public flow(flowId: number, opts: EventOptions, req?: Request): Promise<RiskResult> {
     const requestUrl = `${this.options.apiUrl}/flow/${flowId}`;
     const event: Event = this.eventManager.buildEvent(req, opts);
     return this.eventManager.sendSync(event, requestUrl);

@@ -37,12 +37,8 @@ export default class Middleware {
         userAgent: userAgentFromRequest(req)
       }, req);
 
-      if (resp.action === 'block') {
+      if (resp.riskLevel === 'low') {
         res.end();
-      }
-
-      if (resp.action === 'redirect') {
-        res.redirect('/error');
       }
     }
 
