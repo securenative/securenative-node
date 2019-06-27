@@ -73,6 +73,14 @@ const cookieIdFromRequest = (req: Request, options) => {
   return cookies[cookieName] || null;
 }
 
+const secureheaderFromRequest = (req: Request) => {
+  if (!req) {
+    return null;
+  }
+  const secHeader = req.headers['x-securenative'] || '';
+  return secHeader.toString() || null;
+}
+
 const promiseTimeout = (promise, ms) => {
   const timeout = new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -92,5 +100,6 @@ export {
   remoteIpFromRequest,
   userAgentFromRequest,
   cookieIdFromRequest,
+  secureheaderFromRequest,
   promiseTimeout
 }
