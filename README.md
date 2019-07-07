@@ -32,7 +32,7 @@ import { SecureNative, EventTypes } from '@securenative/sdk';
 or
 const { SecureNative, EventTypes } = require('@securenative/sdk'); // if your using ES5
 
-const secureNative = SecureNative({ apiKey: 'YOUR_API_KEY' });
+const secureNative = SecureNative('YOUR_API_KEY', { // optionally pass params here  });
 
 secureNative.track({
     eventType: EventTypes.LOG_IN,
