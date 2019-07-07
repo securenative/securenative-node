@@ -13,7 +13,7 @@ npm i @securenative/sdk
 ```js
 import { SecureNative } from '@securenative/sdk';
 
-const secureNative = SecureNative({ apiKey: 'YOUR_API_KEY' });
+const secureNative = new SecureNative({ apiKey: 'YOUR_API_KEY' });
 ```
 
 | Option | Type | Optional | Default Value | Description |
