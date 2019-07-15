@@ -17,6 +17,7 @@ enum EventTypes {
   ROLE_UPDATE = "sn.user.role.update",
   PROFILE_UPDATE = "sn.user.profile.update",
   PAGE_VIEW = "sn.user.page.view",
+  VERIFY = "sn.verify"
 };
 
 export default EventTypes;
