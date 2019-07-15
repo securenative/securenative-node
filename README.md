@@ -13,7 +13,7 @@ npm i @securenative/sdk
 ```js
 import { SecureNative } from '@securenative/sdk';
 
-const secureNative = SecureNative({ apiKey: 'YOUR_API_KEY' });
+const secureNative = new SecureNative({ apiKey: 'YOUR_API_KEY' });
 ```
 
 | Option | Type | Optional | Default Value | Description |
@@ -32,7 +32,7 @@ import { SecureNative, EventTypes } from '@securenative/sdk';
 or
 const { SecureNative, EventTypes } = require('@securenative/sdk'); // if your using ES5
 
-const secureNative = SecureNative({ apiKey: 'YOUR_API_KEY' });
+const secureNative = new SecureNative('YOUR_API_KEY', { // optionally pass params here  });
 
 secureNative.track({
     eventType: EventTypes.LOG_IN,
@@ -41,7 +41,7 @@ secureNative.track({
     user: {
       id: '12345'
     }
-});
+}, req);
 ```
 
 ## WebHook
