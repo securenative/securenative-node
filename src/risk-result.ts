@@ -1,7 +1,10 @@
+import ActionType from "./action-type";
 import { RiskLevel } from "./risk-level";
 
-export type RiskResult = {
+type RiskResult = {
+  action: ActionType;
   riskLevel: RiskLevel;
   score: number;
-  triggers: Array<string>;
 };
+
+export default RiskResult;

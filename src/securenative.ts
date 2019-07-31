@@ -4,8 +4,13 @@ import { SecureNativeOptions } from './securenative-options';
 import { Event } from './event';
 import { EventOptions } from './event-options';
 import EventManager from './event-manager';
-import { RiskResult } from './risk-result';
+import RiskResult from './risk-result';
+import VerifyResult from './verify-result';
 import Middleware from './middleware';
+import ModuleManager from './module-manager';
+import InterceptorManager from './interceptors/interceptor-manager';
+import { decrypt } from './utils';
+import ActionType from './action-type';
 
 const MAX_CUSTOM_PARAMS = 6;
 const defaultOptions: SecureNativeOptions = {
@@ -28,8 +33,11 @@ export default class SecureNative {
     this.options = Object.assign({}, defaultOptions, options);
     this.eventManager = new EventManager(apiKey, this.options);
     this.middleware = new Middleware(this);
-    this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware); 
-    this.middleware.verifyRequest = this.middleware.verifyRequest.bind(this.middleware); 
+    this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware);
+    this.middleware.verifyRequest = this.middleware.verifyRequest.bind(this.middleware);
+
+    const moduleManager = new ModuleManager();
+    InterceptorManager.applyInterceptors(moduleManager, this.middleware.verifyRequest);
   }
 
   public track(opts: EventOptions, req?: Request) {
@@ -42,10 +50,35 @@ export default class SecureNative {
     this.eventManager.sendAsync(event, requestUrl);
   }
 
-  public verify(opts: EventOptions, req?: Request): Promise<RiskResult> {
+  public async verify(opts: EventOptions, req?: Request): Promise<VerifyResult> {
     const requestUrl = `${this.options.apiUrl}/verify`;
     const event: Event = this.eventManager.buildEvent(req, opts);
-    return this.eventManager.sendSync(event, requestUrl);
+
+    try {
+      return await this.eventManager.sendSync(event, requestUrl);
+    } catch (ex) {
+      return {
+        riskLevel: "low",
+        score: 0,
+        triggers: []
+      }
+    }
+  }
+
+  public async risk(opts: EventOptions, req?: Request): Promise<RiskResult> {
+    const requestUrl = `${this.options.apiUrl}/risk`;
+    const event: Event = this.eventManager.buildEvent(req, opts);
+    try {
+      const result = await this.eventManager.sendSync(event, requestUrl);
+      const data = decrypt(result.data, this.apiKey);
+      return JSON.parse(data);
+    } catch (ex) {
+      return {
+        action: ActionType.ALLOW,
+        riskLevel: "low",
+        score: 0
+      }
+    }
   }
 
   public flow(flowId: number, opts: EventOptions, req?: Request): Promise<RiskResult> {

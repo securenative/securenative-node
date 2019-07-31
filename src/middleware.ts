@@ -2,10 +2,12 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { cookieIdFromRequest, clientIpFromRequest, userAgentFromRequest } from './utils';
 import SecureNative from './securenative';
+import EventTypes from './event-types';
 
 const SIGNATURE_KEY = 'x-securenative';
 
 export default class Middleware {
+  private _routes: Array<string> = [];
   constructor(private secureNative: SecureNative) { }
 
   verifyWebhook(req: Request, res: Response, next: NextFunction) {
@@ -29,19 +31,42 @@ export default class Middleware {
   }
 
   async verifyRequest(req: Request, res: Response, next: NextFunction) {
-    const cookie = cookieIdFromRequest(req, {});
-    if (!cookie) {
-      const resp = await this.secureNative.verify({
-        eventType: "sn.verify",
-        ip: clientIpFromRequest(req),
-        userAgent: userAgentFromRequest(req)
-      }, req);
+    console.log('verifyRequest');
 
-      if (resp.riskLevel === 'low') {
-        res.end();
-      }
+    if (this._routes.length == 0) {
+      req.app._router.stack.forEach(middleware => {
+        if (middleware.route) {
+          this._routes.push(middleware.route.path);
+        }
+      });
     }
 
-    return next();
+    if (this._routes.includes(req.path)) {
+      console.log('securenative middleware');
+
+      const cookie = cookieIdFromRequest(req, {});
+      if (!cookie) {
+        const resp = await this.secureNative.risk({
+          eventType: EventTypes.RISK,
+          ip: clientIpFromRequest(req),
+          userAgent: userAgentFromRequest(req)
+        }, req);
+
+        switch (resp.action) {
+          case "allow":
+            return next()
+          case "block":
+            if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+              res.status(400).json({ message: 'Request Blocked' });
+            } else {
+              res.status(400).sendFile(process.cwd() + '/node_modules/@securenative/sdk/dist/src/templates/block.html');
+            }
+            break;
+          case "challenge":
+            res.status(200).sendFile(process.cwd() + '/node_modules/@securenative/sdk/dist/src/templates/challenge.html');
+            break;
+        }
+      }
+    }
   }
 }

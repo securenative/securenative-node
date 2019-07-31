@@ -1,7 +1,11 @@
 import { Request } from 'express'
 import { parse } from 'cookie';
 import { isV4Format, isV6Format, isPublic, isLoopback, isEqual } from 'ip';
+import { createDecipheriv, randomBytes, createCipheriv } from 'crypto';
 
+const ALGORITHM = 'aes-256-cbc';
+const BLOCK_SIZE = 16;
+const AES_KEY_SIZE = 32;
 const ipHeaders = ['x-forwarded-for', 'x-client-ip', 'x-real-ip', 'x-forwarded', 'x-cluster-client-ip', 'forwarded-for', 'forwarded', 'via'];
 
 const clientIpFromRequest = (req: Request) => {
@@ -95,11 +99,44 @@ const promiseTimeout = (promise, ms) => {
   ]);
 }
 
+function trimKey(key: string): string {
+  return key.substring(0, AES_KEY_SIZE);
+}
+
+// Decrypts cipher text into plain text
+function decrypt(cipherText: string, cipherKey: string) {
+  const contents = Buffer.from(cipherText, 'hex');
+  const iv = contents.slice(0, BLOCK_SIZE);
+  const textBytes: any = contents.slice(BLOCK_SIZE);
+
+  const decipher = createDecipheriv(ALGORITHM, trimKey(cipherKey), iv);
+  let decrypted = decipher.update(textBytes, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+  return decrypted;
+}
+
+// Encrypts plain text into cipher text
+function encrypt(plainText, cipherKey: string) {
+  const iv = randomBytes(BLOCK_SIZE);
+  const cipher = createCipheriv(ALGORITHM, trimKey(cipherKey), iv);
+  let cipherText;
+  try {
+    cipherText = cipher.update(plainText, 'utf8', 'hex');
+    cipherText += cipher.final('hex');
+    cipherText = iv.toString('hex') + cipherText
+  } catch (e) {
+    cipherText = null;
+  }
+  return cipherText;
+}
+
 export {
   clientIpFromRequest,
   remoteIpFromRequest,
   userAgentFromRequest,
   cookieIdFromRequest,
   secureheaderFromRequest,
-  promiseTimeout
+  promiseTimeout,
+  encrypt,
+  decrypt
 }
