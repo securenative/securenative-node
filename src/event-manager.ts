@@ -8,7 +8,7 @@ import { cookieIdFromRequest, secureheaderFromRequest, clientIpFromRequest, remo
 import { SecureNativeOptions } from './securenative-options';
 import  RiskResult  from './risk-result';
 import { FetchOptions } from './fetch-options';
-import { promiseTimeout } from './utils';
+import { promiseTimeout, decrypt } from './utils';
 import { version } from './../package.json';
 
 export default class EventManager {
@@ -16,7 +16,7 @@ export default class EventManager {
   private events: Array<FetchOptions> = [];
   private sendEnabled: Boolean = true;
 
-  constructor(apiKey: string, private options: SecureNativeOptions) {
+  constructor(private apiKey: string, private options: SecureNativeOptions) {
     this.defaultFetchOptions = {
       url: options.apiUrl || 'https://api.securenative.com/v1/collector',
       options: {
@@ -34,7 +34,7 @@ export default class EventManager {
 
   public buildEvent(req: Request, opts: EventOptions): Event {
     const cookie = cookieIdFromRequest(req, this.options) || secureheaderFromRequest(req) || '{}';
-    const cookieDecoded = Buffer.from(cookie, 'base64').toString('utf8') || '{}';
+    const cookieDecoded = decrypt(cookie, this.apiKey);
     const clientFP = JSON.parse(cookieDecoded) || {};
     const eventType = opts.eventType || EventTypes.LOG_IN;
 

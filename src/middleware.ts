@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { cookieIdFromRequest, clientIpFromRequest, userAgentFromRequest } from './utils';
 import SecureNative from './securenative';
 import EventTypes from './event-types';
+import { decrypt } from './utils';
 
 const SIGNATURE_KEY = 'x-securenative';
 
@@ -45,6 +46,7 @@ export default class Middleware {
       console.log('securenative middleware');
 
       const cookie = cookieIdFromRequest(req, {});
+
       if (!cookie) {
         const resp = await this.secureNative.risk({
           eventType: EventTypes.RISK,
@@ -66,6 +68,9 @@ export default class Middleware {
             res.status(200).sendFile(process.cwd() + '/node_modules/@securenative/sdk/dist/src/templates/challenge.html');
             break;
         }
+      } else {
+        const cookieDecoded = decrypt(cookie, this.secureNative.apiKey);
+        const cookieData = JSON.parse(cookieDecoded) || {};
       }
     }
   }
