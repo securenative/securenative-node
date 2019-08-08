@@ -17,17 +17,15 @@ export default class KoaInterceptor implements Interceptor {
   intercept(middleware) {
     if (this.canExecute()) {
       const koaModule = this.getModule();
-      const lazyrouter = koaModule.exports.application.lazyrouter;
+      const app = koaModule.exports.prototype.use;
 
-      koaModule.exports.application.lazyrouter = function () {
-        const res = lazyrouter.apply(this, arguments);
+      koaModule.exports.prototype.use = function () {
+        app.apply(this, arguments);      
         if (!this.middlewareLoaded) {
-          this._router.use(middleware);
-
           this.middlewareLoaded = true;
+          this.middleware.unshift(middleware);
         }
-        return res;
-      };
+      }
     }
   }
 }

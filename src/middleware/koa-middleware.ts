@@ -1,6 +1,8 @@
 import { Context } from 'koa';
 import SecureNative from './../securenative';
 import { Middleware, IMiddleware } from './middleware';
+import ActionType from '../action-type';
+import { readFile } from 'fs';
 
 export default class KoaMiddleware extends Middleware implements IMiddleware {
   constructor(private secureNative: SecureNative) {
@@ -21,7 +23,38 @@ export default class KoaMiddleware extends Middleware implements IMiddleware {
     return next();
   }
 
-  verifyRequest(...params: any[]) {
-    throw new Error("Method not implemented.");
+  async verifyRequest(ctx: Context, next: Function) {
+    console.log('verifyRequest');
+    const resp = await super.executeRisk(ctx.req, this.secureNative);
+
+    switch (resp.action) {
+      case ActionType.ALLOW:
+        return next()
+      case ActionType.BLOCK:
+        if (ctx.get('X-Requested-With') === 'XMLHttpRequest' || ctx.accepts('json')) {
+          ctx.status = 400;
+          ctx.body = {
+            json: { message: 'Request Blocked' }
+          };
+        } else {
+          readFile(process.cwd() + '/node_modules/@securenative/sdk/dist/src/templates/block.html', 'utf-8', (err, content) => {
+            if (err) {
+              return;
+            }
+            ctx.status = 200;
+            ctx.body = content;
+          });
+        }
+        break;
+      case ActionType.CHALLENGE:
+        readFile(process.cwd() + '/node_modules/@securenative/sdk/dist/src/templates/challenge.html', 'utf-8', (err, content) => {
+          if (err) {
+            return;
+          }
+          ctx.status = 200;
+          ctx.body = content;
+        });
+        break;
+    }
   }
 }

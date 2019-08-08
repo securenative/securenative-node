@@ -1,11 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { cookieIdFromRequest, clientIpFromRequest, userAgentFromRequest } from './../utils';
 import SecureNative from './../securenative';
-import EventTypes from './../event-types';
-import { decrypt } from './../utils';
-import ActionType from "./../action-type";
-import RiskResult from './../risk-result';
 import { Middleware, IMiddleware } from './middleware';
+import ActionType from '../action-type';
 
 export default class ExpressMiddleware extends Middleware implements IMiddleware {
   private _routes: Array<string> = [];
@@ -40,20 +36,7 @@ export default class ExpressMiddleware extends Middleware implements IMiddleware
 
     if (this._routes.includes(req.path)) {
       console.log('securenative middleware');
-
-      const cookie = cookieIdFromRequest(req, {});
-      let resp: RiskResult = null;
-
-      if (!cookie) {
-        resp = await this.secureNative.risk({
-          eventType: EventTypes.RISK,
-          ip: clientIpFromRequest(req),
-          userAgent: userAgentFromRequest(req)
-        }, req);
-      } else {
-        const cookieDecoded = decrypt(cookie, this.secureNative.apiKey);
-        resp = JSON.parse(cookieDecoded) || {};
-      }
+      const resp = await super.executeRisk(req, this.secureNative);
 
       switch (resp.action) {
         case ActionType.ALLOW:

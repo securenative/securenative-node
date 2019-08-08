@@ -1,4 +1,9 @@
 import { createHmac, timingSafeEqual } from 'crypto';
+import { cookieIdFromRequest, clientIpFromRequest, userAgentFromRequest } from './../utils';
+import { decrypt } from './../utils';
+import EventTypes from './../event-types';
+import ActionType from "./../action-type";
+import RiskResult from './../risk-result';
 
 const SIGNATURE_KEY = 'x-securenative';
 
@@ -20,5 +25,23 @@ export class Middleware {
     }
 
     return true;
+  }
+
+  async executeRisk(req, secureNative): Promise<RiskResult> {
+    const cookie = cookieIdFromRequest(req, {});
+    let resp: RiskResult = null;
+
+    if (!cookie) {
+      resp = await secureNative.risk({
+        eventType: EventTypes.RISK,
+        ip: clientIpFromRequest(req),
+        userAgent: userAgentFromRequest(req)
+      }, req);
+    } else {
+      const cookieDecoded = decrypt(cookie, secureNative.apiKey);
+      resp = JSON.parse(cookieDecoded) || {};
+    }
+
+    return resp;
   }
 }
