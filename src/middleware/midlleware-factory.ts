@@ -1,6 +1,6 @@
 import KoaMiddleware from './koa-middleware';
 import ExpressMiddleware from './express-middleware';
-import IMiddleware from './middleware';
+import { IMiddleware } from './middleware';
 import InterceptModules from '../interceptors/intercept-modules';
 import SecureNative from '../securenative';
 

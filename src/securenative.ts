@@ -5,7 +5,7 @@ import { EventOptions } from './event-options';
 import EventManager from './event-manager';
 import RiskResult from './risk-result';
 import VerifyResult from './verify-result';
-import IMiddleware from './middleware/middleware';
+import { IMiddleware } from './middleware/middleware';
 import { createMiddleware } from './middleware/midlleware-factory';
 import ModuleManager from './module-manager';
 import InterceptorManager from './interceptors/interceptor-manager';
