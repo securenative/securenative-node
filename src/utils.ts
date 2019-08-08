@@ -104,14 +104,20 @@ function trimKey(key: string): string {
 
 // Decrypts cipher text into plain text
 function decrypt(cipherText: string, cipherKey: string) {
-  const contents = Buffer.from(cipherText, 'hex');
-  const iv = contents.slice(0, BLOCK_SIZE);
-  const textBytes: any = contents.slice(BLOCK_SIZE);
+  try {
+    const contents = Buffer.from(cipherText, 'hex');
+    const iv = contents.slice(0, BLOCK_SIZE);
+    const textBytes: any = contents.slice(BLOCK_SIZE);
 
-  const decipher = createDecipheriv(ALGORITHM, trimKey(cipherKey), iv);
-  let decrypted = decipher.update(textBytes, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-  return decrypted;
+    const decipher = createDecipheriv(ALGORITHM, trimKey(cipherKey), iv);
+    let decrypted = decipher.update(textBytes, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  } catch (ex) {
+    // log error
+  }
+
+  return null;
 }
 
 // Encrypts plain text into cipher text

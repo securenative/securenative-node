@@ -6,6 +6,7 @@ import { SecureNativeOptions } from './securenative-options';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
+const API_KEY = "DC48C86C04DF0005FB4DE3629AB1F95A922274B0BCACAE326A47DCEA7D6EA6E3";
 
 describe('SecureNative', () => {
   it('Should fail creating instance if apikey is missing', () => {
@@ -14,16 +15,17 @@ describe('SecureNative', () => {
 
   it('Should have all methods defined', () => {
     const snOptions: SecureNativeOptions = { autoSend: false };
-    const secureNative = new SecureNative('SECURENATIVE_API_KEY', snOptions);
+    const secureNative = new SecureNative(API_KEY, snOptions);
 
     expect(secureNative).to.have.property('track');
     expect(secureNative).to.have.property('verify');
+    expect(secureNative).to.have.property('risk');
     expect(secureNative).to.have.property('flow');
   });
 
   it('Should send event async', () => {
     const snOptions: SecureNativeOptions = { autoSend: false };
-    const secureNative = new SecureNative('SECURENATIVE_API_KEY', snOptions);
+    const secureNative = new SecureNative(API_KEY, snOptions);
 
     secureNative.track({
       eventType: EventTypes.LOG_IN,
@@ -38,7 +40,7 @@ describe('SecureNative', () => {
 
   it('Should return defaut response on failure', async () => {
     const snOptions: SecureNativeOptions = { autoSend: false, apiUrl: 'https://localhost' };
-    const secureNative = new SecureNative('SECURENATIVE_API_KEY',snOptions);
+    const secureNative = new SecureNative(API_KEY, snOptions);
 
     const res = await secureNative.verify({
       ip: '127.0.0.1',
