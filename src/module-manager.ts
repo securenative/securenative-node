@@ -1,3 +1,6 @@
+import { readFile } from 'fs';
+import { join } from 'path';
+
 export default class ModuleManager {
   private _modules: Object;
 
@@ -7,6 +10,20 @@ export default class ModuleManager {
 
   get Modules(): Object {
     return this._modules;
+  }
+
+  private getAllRegisteredModules() {
+    const registeredModules = {};
+    const basePath = process.cwd();
+    const packagesPath = join(basePath, 'packages.json');
+
+    readFile(packagesPath, 'utf-8', (err, content) => {
+      if (err) {
+        return;
+      }
+      const pkg = JSON.parse(content);
+      pkg.dependencies;
+    })
   }
 
   private getLoadedModules() {

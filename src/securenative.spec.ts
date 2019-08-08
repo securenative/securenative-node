@@ -14,7 +14,8 @@ describe('SecureNative', () => {
 
   it('Should have all methods defined', () => {
     const snOptions: SecureNativeOptions = { autoSend: false };
-    const secureNative = new SecureNative('SECURENATIVE_API_KEY',snOptions);
+    const secureNative = new SecureNative('SECURENATIVE_API_KEY', snOptions);
+
     expect(secureNative).to.have.property('track');
     expect(secureNative).to.have.property('verify');
     expect(secureNative).to.have.property('flow');

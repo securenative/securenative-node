@@ -1,4 +1,3 @@
-import { Request } from 'express'
 import { parse } from 'cookie';
 import { isV4Format, isV6Format, isPublic, isLoopback, isEqual } from 'ip';
 import { createDecipheriv, randomBytes, createCipheriv } from 'crypto';
@@ -8,7 +7,7 @@ const BLOCK_SIZE = 16;
 const AES_KEY_SIZE = 32;
 const ipHeaders = ['x-forwarded-for', 'x-client-ip', 'x-real-ip', 'x-forwarded', 'x-cluster-client-ip', 'forwarded-for', 'forwarded', 'via'];
 
-const clientIpFromRequest = (req: Request) => {
+const clientIpFromRequest = (req: any) => {
   if (!req) {
     return '';
   }
@@ -53,21 +52,21 @@ const clientIpFromRequest = (req: Request) => {
   return remote;
 }
 
-const remoteIpFromRequest = (req: Request) => {
+const remoteIpFromRequest = (req: any) => {
   if (req && req.connection) {
     return req.connection.remoteAddress;
   }
   return '';
 }
 
-const userAgentFromRequest = (req: Request) => {
+const userAgentFromRequest = (req: any) => {
   if (!req) {
     return '';
   }
   return req.headers['user-agent'];
 }
 
-const cookieIdFromRequest = (req: Request, options) => {
+const cookieIdFromRequest = (req: any, options) => {
   if (!req) {
     return null;
   }
@@ -77,7 +76,7 @@ const cookieIdFromRequest = (req: Request, options) => {
   return cookies[cookieName] || null;
 }
 
-const secureheaderFromRequest = (req: Request) => {
+const secureheaderFromRequest = (req: any) => {
   if (!req) {
     return null;
   }

@@ -1,12 +1,12 @@
 
-import { Request } from 'express';
 import { SecureNativeOptions } from './securenative-options';
 import { Event } from './event';
 import { EventOptions } from './event-options';
 import EventManager from './event-manager';
 import RiskResult from './risk-result';
 import VerifyResult from './verify-result';
-import Middleware from './middleware';
+import IMiddleware from './middleware/middleware';
+import { createMiddleware } from './middleware/midlleware-factory';
 import ModuleManager from './module-manager';
 import InterceptorManager from './interceptors/interceptor-manager';
 import { decrypt } from './utils';
@@ -24,23 +24,26 @@ const defaultOptions: SecureNativeOptions = {
 export default class SecureNative {
   private eventManager: EventManager;
   private options: SecureNativeOptions;
-  public middleware: Middleware;
-
+  public middleware: IMiddleware;
+  public moduleManager: ModuleManager;
   constructor(public apiKey: string, options: SecureNativeOptions = defaultOptions) {
     if (!apiKey) {
       throw new Error('You must pass your SecureNative api key');
     }
     this.options = Object.assign({}, defaultOptions, options);
     this.eventManager = new EventManager(apiKey, this.options);
-    this.middleware = new Middleware(this);
+    this.moduleManager = new ModuleManager();
+
+    this.middleware = createMiddleware(this);
     this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware);
     this.middleware.verifyRequest = this.middleware.verifyRequest.bind(this.middleware);
 
-    const moduleManager = new ModuleManager();
-    InterceptorManager.applyInterceptors(moduleManager, this.middleware.verifyRequest);
+    if (options.enableInterception) {
+      InterceptorManager.applyInterceptors(this.moduleManager, this.middleware.verifyRequest);
+    }
   }
 
-  public track(opts: EventOptions, req?: Request) {
+  public track(opts: EventOptions, req?: any) {
     if (opts && opts.params && opts.params.length > MAX_CUSTOM_PARAMS) {
       throw new Error(`You can only specify maximum of ${MAX_CUSTOM_PARAMS} params`);
     }
@@ -50,7 +53,7 @@ export default class SecureNative {
     this.eventManager.sendAsync(event, requestUrl);
   }
 
-  public async verify(opts: EventOptions, req?: Request): Promise<VerifyResult> {
+  public async verify(opts: EventOptions, req?: any): Promise<VerifyResult> {
     const requestUrl = `${this.options.apiUrl}/verify`;
     const event: Event = this.eventManager.buildEvent(req, opts);
 
@@ -65,7 +68,7 @@ export default class SecureNative {
     }
   }
 
-  public async risk(opts: EventOptions, req?: Request): Promise<RiskResult> {
+  public async risk(opts: EventOptions, req?: any): Promise<RiskResult> {
     const requestUrl = `${this.options.apiUrl}/risk`;
     const event: Event = this.eventManager.buildEvent(req, opts);
     try {
@@ -81,7 +84,7 @@ export default class SecureNative {
     }
   }
 
-  public flow(flowId: number, opts: EventOptions, req?: Request): Promise<RiskResult> {
+  public flow(flowId: number, opts: EventOptions, req?: any): Promise<RiskResult> {
     const requestUrl = `${this.options.apiUrl}/flow/${flowId}`;
     const event: Event = this.eventManager.buildEvent(req, opts);
     return this.eventManager.sendSync(event, requestUrl);

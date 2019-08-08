@@ -2,7 +2,6 @@ import { v4 } from 'uuid';
 import fetch from 'node-fetch';
 import { EventOptions } from './event-options';
 import EventTypes from './event-types';
-import { Request } from 'express';
 import { Event } from './event';
 import { cookieIdFromRequest, secureheaderFromRequest, clientIpFromRequest, remoteIpFromRequest, userAgentFromRequest } from './utils';
 import { SecureNativeOptions } from './securenative-options';
@@ -32,7 +31,7 @@ export default class EventManager {
     this.startEventsPersist();
   }
 
-  public buildEvent(req: Request, opts: EventOptions): Event {
+  public buildEvent(req: any, opts: EventOptions): Event {
     const cookie = cookieIdFromRequest(req, this.options) || secureheaderFromRequest(req) || '{}';
     const cookieDecoded = decrypt(cookie, this.apiKey);
     const clientFP = JSON.parse(cookieDecoded) || {};

@@ -1,15 +1,16 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { Request, Response, NextFunction } from 'express';
-import { cookieIdFromRequest, clientIpFromRequest, userAgentFromRequest } from './utils';
-import SecureNative from './securenative';
-import EventTypes from './event-types';
-import { decrypt } from './utils';
-import ActionType from "./action-type";
-import RiskResult from './risk-result';
+import { cookieIdFromRequest, clientIpFromRequest, userAgentFromRequest } from './../utils';
+import SecureNative from './../securenative';
+import EventTypes from './../event-types';
+import { decrypt } from './../utils';
+import ActionType from "./../action-type";
+import RiskResult from './../risk-result';
+import IMiddleware from './middleware';
 
 const SIGNATURE_KEY = 'x-securenative';
 
-export default class Middleware {
+export default class ExpressMiddleware implements IMiddleware{
   private _routes: Array<string> = [];
   constructor(private secureNative: SecureNative) { }
 
