@@ -5,7 +5,7 @@ import InterceptModules from '../interceptors/intercept-modules';
 import SecureNative from '../securenative';
 
 export function createMiddleware(secureNative: SecureNative): IMiddleware {
-  if (secureNative.moduleManager.Modules[InterceptModules.Express]) {
+  if (secureNative.moduleManager.Modules[InterceptModules.Koa]) {
     return new KoaMiddleware(secureNative);
   }
   //make express as default middleware

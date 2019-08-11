@@ -12,7 +12,7 @@ export interface IMiddleware {
   verifyRequest(...params: any[]);
 }
 
-export class Middleware {
+export abstract class Middleware {
   verifySignature(headers, body, apiKey): Boolean {
     const signature = headers[SIGNATURE_KEY] || '';
     // calculating signature
