@@ -2,13 +2,12 @@ import { v4 } from 'uuid';
 import fetch from 'node-fetch';
 import { EventOptions } from './event-options';
 import EventTypes from './event-types';
-import { Request } from 'express';
 import { Event } from './event';
 import { cookieIdFromRequest, secureheaderFromRequest, clientIpFromRequest, remoteIpFromRequest, userAgentFromRequest } from './utils';
 import { SecureNativeOptions } from './securenative-options';
-import { RiskResult } from './risk-result';
+import  RiskResult  from './risk-result';
 import { FetchOptions } from './fetch-options';
-import { promiseTimeout } from './utils';
+import { promiseTimeout, decrypt } from './utils';
 import { version } from './../package.json';
 
 export default class EventManager {
@@ -16,7 +15,7 @@ export default class EventManager {
   private events: Array<FetchOptions> = [];
   private sendEnabled: Boolean = true;
 
-  constructor(apiKey: string, private options: SecureNativeOptions) {
+  constructor(private apiKey: string, private options: SecureNativeOptions) {
     this.defaultFetchOptions = {
       url: options.apiUrl || 'https://api.securenative.com/v1/collector',
       options: {
@@ -32,9 +31,9 @@ export default class EventManager {
     this.startEventsPersist();
   }
 
-  public buildEvent(req: Request, opts: EventOptions): Event {
+  public buildEvent(req: any, opts: EventOptions): Event {
     const cookie = cookieIdFromRequest(req, this.options) || secureheaderFromRequest(req) || '{}';
-    const cookieDecoded = Buffer.from(cookie, 'base64').toString('utf8') || '{}';
+    const cookieDecoded = decrypt(cookie, this.apiKey);
     const clientFP = JSON.parse(cookieDecoded) || {};
     const eventType = opts.eventType || EventTypes.LOG_IN;
 
@@ -55,7 +54,7 @@ export default class EventManager {
     }
   }
 
-  public async sendSync(event: Event, requestUrl: string): Promise<RiskResult> {
+  public async sendSync(event: Event, requestUrl: string): Promise<any> {
     const eventOptions = Object.assign({}, this.defaultFetchOptions.options, {
       body: JSON.stringify(event)
     });
@@ -65,11 +64,7 @@ export default class EventManager {
       const body = await resp.json();
       return body;
     } catch (ex) {
-      return {
-        riskLevel: "low",
-        score: 0,
-        triggers: []
-      }
+      return Promise.reject();
     }
   }
 

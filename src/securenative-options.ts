@@ -4,4 +4,5 @@ export type SecureNativeOptions = {
   maxEvents?: number;
   timeout?: number;
   autoSend?: Boolean;
+  enableInterception?: Boolean;
 }
