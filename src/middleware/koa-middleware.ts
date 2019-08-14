@@ -10,8 +10,9 @@ export default class KoaMiddleware extends Middleware implements IMiddleware {
   }
 
   verifyWebhook(ctx: Context, next: Function) {
-    const { body = null, req: { headers } = null } = ctx;
-
+    const { req: { headers } = null } = ctx;
+    const body = JSON.parse(ctx.toJSON())
+    
     if (!body || !headers) {
       return ctx.throw(400, 'Bad Request');
     }
