@@ -24,7 +24,6 @@ export default class ExpressMiddleware extends Middleware implements IMiddleware
   }
 
   async verifyRequest(req: Request, res: Response, next: NextFunction) {
-    console.log('verifyRequest');
 
     if (this._routes.length == 0) {
       req.app._router.stack.forEach(middleware => {
@@ -35,7 +34,6 @@ export default class ExpressMiddleware extends Middleware implements IMiddleware
     }
 
     if (this._routes.includes(req.path)) {
-      console.log('securenative middleware');
       const resp = await super.executeRisk(req, this.secureNative);
 
       switch (resp.action) {
