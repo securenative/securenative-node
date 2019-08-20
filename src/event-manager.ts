@@ -5,7 +5,7 @@ import EventTypes from './event-types';
 import { Event } from './event';
 import { cookieIdFromRequest, secureheaderFromRequest, clientIpFromRequest, remoteIpFromRequest, userAgentFromRequest } from './utils';
 import { SecureNativeOptions } from './securenative-options';
-import  RiskResult  from './risk-result';
+import RiskResult from './risk-result';
 import { FetchOptions } from './fetch-options';
 import { promiseTimeout, decrypt } from './utils';
 import { version } from './../package.json';
@@ -33,8 +33,17 @@ export default class EventManager {
 
   public buildEvent(req: any, opts: EventOptions): Event {
     const cookie = cookieIdFromRequest(req, this.options) || secureheaderFromRequest(req) || '{}';
+    if (this.options.debugMode) {
+      console.info(`Cookie: ${cookie}`);
+    }
     const cookieDecoded = decrypt(cookie, this.apiKey);
+    if (this.options.debugMode) {
+      console.info(`Cookie decoded: ${cookieDecoded}`);
+    }
     const clientFP = JSON.parse(cookieDecoded) || {};
+    if (this.options.debugMode) {
+      console.info(`Client fp: ${clientFP}`);
+    }
     const eventType = opts.eventType || EventTypes.LOG_IN;
 
     return {
