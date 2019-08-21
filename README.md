@@ -24,6 +24,7 @@ const secureNative = new SecureNative({ apiKey: 'YOUR_API_KEY' });
 | maxEvents | number | true | 1000 | Max in-memory events queue| 
 | timeout | number | true | 1500 | API call timeout in ms|
 | autoSend | Boolean | true | true | Should api auto send the events|
+| debugMode | Boolean | true | false | Displays logging to standard output|
 
 ## Event tracking
 
