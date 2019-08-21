@@ -17,11 +17,19 @@ const defaultSettings: pino.LoggerOptions = {
 };
 
 export interface ILogger {
-  debug: pino.LogFn;
+  debug(msg: string, ...args: any[]);
 }
 
-export function initLogger(options: SecureNativeOptions): ILogger {
-  const settings = Object.assign({}, { "enabled": options.debugMode || false }, defaultSettings);
-  const logger = pino(settings);
-  return logger;
+export class Logger {
+  private static log: ILogger;
+  static initLogger(options: SecureNativeOptions) {
+    const settings = Object.assign({}, { "enabled": options.debugMode || false }, defaultSettings);
+    Logger.log = pino(settings);
+  }
+
+  static debug(msg: string, ...args: any[]) {
+    if (Logger.log) {
+      Logger.log.debug(msg, args);
+    }
+  }
 }
