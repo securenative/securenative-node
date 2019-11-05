@@ -5,10 +5,10 @@ import EventTypes from './event-types';
 import { Event } from './event';
 import { cookieIdFromRequest, secureheaderFromRequest, clientIpFromRequest, remoteIpFromRequest, userAgentFromRequest } from './utils';
 import { SecureNativeOptions } from './securenative-options';
-import  RiskResult  from './risk-result';
 import { FetchOptions } from './fetch-options';
 import { promiseTimeout, decrypt } from './utils';
 import { version } from './../package.json';
+import { Logger } from './logger';
 
 export default class EventManager {
   private defaultFetchOptions: FetchOptions;
@@ -33,11 +33,14 @@ export default class EventManager {
 
   public buildEvent(req: any, opts: EventOptions): Event {
     const cookie = cookieIdFromRequest(req, this.options) || secureheaderFromRequest(req) || '{}';
+    Logger.debug("Cookie from request", cookie);
     const cookieDecoded = decrypt(cookie, this.apiKey);
+    Logger.debug("Cookie decoded", cookieDecoded);
     const clientFP = JSON.parse(cookieDecoded) || {};
+    Logger.debug("Extracted user FP:", clientFP);
     const eventType = opts.eventType || EventTypes.LOG_IN;
 
-    return {
+    const event = {
       eventType,
       cid: clientFP.cid || '',
       vid: v4(),
@@ -52,6 +55,8 @@ export default class EventManager {
       device: opts.device || {},
       params: opts.params
     }
+    Logger.debug("Built new event", event);
+    return event;
   }
 
   public async sendSync(event: Event, requestUrl: string): Promise<any> {
@@ -61,9 +66,11 @@ export default class EventManager {
 
     try {
       const resp = await promiseTimeout(fetch(requestUrl, eventOptions), this.options.timeout);
+      Logger.debug("Successfuly sent event ", eventOptions);
       const body = await resp.json();
       return body;
     } catch (ex) {
+      Logger.debug("Failed to sent event ", eventOptions);
       return Promise.reject();
     }
   }
@@ -81,14 +88,19 @@ export default class EventManager {
       url: requestUrl,
       options: eventOptions
     });
+    Logger.debug("Added event to persist queue", eventOptions.body);
   }
 
   private async sendEvents() {
     if (this.events.length > 0 && this.sendEnabled) {
       const fetchEvent = this.events.shift();
-      await fetch(fetchEvent.url, fetchEvent.options).catch((err) => {
+      await promiseTimeout(fetch(fetchEvent.url, fetchEvent.options), this.options.timeout).then(() => {
+        Logger.debug("Event successfully sent", fetchEvent);
+      }).catch((err) => {
+        Logger.debug("Failed to send event", err);
         this.events.unshift(fetchEvent);
         const backOff = Math.ceil(Math.random() * 10) * 1000;
+        Logger.debug("BackOff automatic sending by", backOff);
         this.sendEnabled = false;
         setTimeout(() => this.sendEnabled = true, backOff);
       });
@@ -97,7 +109,10 @@ export default class EventManager {
 
   private startEventsPersist() {
     if (this.options.autoSend) {
+      Logger.debug("Starting automatic event persistence");
       setInterval(async () => { await this.sendEvents() }, this.options.interval);
+    } else {
+      Logger.debug("Automatic event persistence diabled, you should manualy persist events");
     }
   }
 }

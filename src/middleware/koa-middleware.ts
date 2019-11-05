@@ -1,5 +1,5 @@
 import { Context } from 'koa';
-import {  } from 'koa-bodyparser';
+import { } from 'koa-bodyparser';
 import SecureNative from './../securenative';
 import { Middleware, IMiddleware } from './middleware';
 import ActionType from '../action-type';
@@ -11,8 +11,8 @@ export default class KoaMiddleware extends Middleware implements IMiddleware {
   }
 
   verifyWebhook(ctx: Context, next: Function) {
-    const { "request": { body } = null,  req: { headers } = null } = ctx;
- 
+    const { "request": { body } = null, req: { headers } = null } = ctx;
+
     if (!body || !headers) {
       return ctx.throw(400, 'Bad Request');
     }
@@ -25,7 +25,6 @@ export default class KoaMiddleware extends Middleware implements IMiddleware {
   }
 
   async verifyRequest(ctx: Context, next: Function) {
-    console.log('verifyRequest');
     const resp = await super.executeRisk(ctx.req, this.secureNative);
 
     switch (resp.action) {

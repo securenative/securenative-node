@@ -11,6 +11,7 @@ import ModuleManager from './module-manager';
 import InterceptorManager from './interceptors/interceptor-manager';
 import { decrypt } from './utils';
 import ActionType from './action-type';
+import { Logger } from './logger';
 
 const MAX_CUSTOM_PARAMS = 6;
 const defaultOptions: SecureNativeOptions = {
@@ -26,10 +27,12 @@ export default class SecureNative {
   private options: SecureNativeOptions;
   public middleware: IMiddleware;
   public moduleManager: ModuleManager;
+
   constructor(public apiKey: string, options: SecureNativeOptions = defaultOptions) {
     if (!apiKey) {
       throw new Error('You must pass your SecureNative api key');
     }
+    Logger.initLogger(options);
     this.options = Object.assign({}, defaultOptions, options);
     this.eventManager = new EventManager(apiKey, this.options);
     this.moduleManager = new ModuleManager();
@@ -44,6 +47,7 @@ export default class SecureNative {
   }
 
   public track(opts: EventOptions, req?: any) {
+    Logger.debug("Track event call", opts);
     if (opts && opts.params && opts.params.length > MAX_CUSTOM_PARAMS) {
       throw new Error(`You can only specify maximum of ${MAX_CUSTOM_PARAMS} params`);
     }
@@ -54,12 +58,16 @@ export default class SecureNative {
   }
 
   public async verify(opts: EventOptions, req?: any): Promise<VerifyResult> {
+    Logger.debug("Verify risk call", opts);
     const requestUrl = `${this.options.apiUrl}/verify`;
     const event: Event = this.eventManager.buildEvent(req, opts);
 
     try {
-      return await this.eventManager.sendSync(event, requestUrl);
+      const result = await this.eventManager.sendSync(event, requestUrl);
+      Logger.debug("Successfuly called virify", result);
+      return result;
     } catch (ex) {
+      Logger.debug("Failed to call virify", ex);
       return {
         riskLevel: "low",
         score: 0,
@@ -69,13 +77,16 @@ export default class SecureNative {
   }
 
   public async risk(opts: EventOptions, req?: any): Promise<RiskResult> {
+    Logger.debug("Risk call", opts);
     const requestUrl = `${this.options.apiUrl}/risk`;
     const event: Event = this.eventManager.buildEvent(req, opts);
     try {
       const result = await this.eventManager.sendSync(event, requestUrl);
       const data = decrypt(result.data, this.apiKey);
+      Logger.debug("Successfuly performed risk", data);
       return JSON.parse(data);
     } catch (ex) {
+      Logger.debug("Failed to perform risk call", ex);
       return {
         action: ActionType.ALLOW,
         riskLevel: "low",
@@ -85,6 +96,7 @@ export default class SecureNative {
   }
 
   public flow(flowId: number, opts: EventOptions, req?: any): Promise<RiskResult> {
+    Logger.debug("Flow call:", flowId);
     const requestUrl = `${this.options.apiUrl}/flow/${flowId}`;
     const event: Event = this.eventManager.buildEvent(req, opts);
     return this.eventManager.sendSync(event, requestUrl);
