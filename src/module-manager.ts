@@ -1,10 +1,10 @@
-import { readFile } from 'fs';
-import { join } from 'path';
+import { Package } from "./package-manager";
 
 export default class ModuleManager {
   private _modules: Object;
+  public framework: string;
 
-  constructor() {
+  constructor(public pkg: Package) {
     this._modules = this.getLoadedModules();
   }
 
@@ -12,25 +12,10 @@ export default class ModuleManager {
     return this._modules;
   }
 
-  private getAllRegisteredModules() {
-    const registeredModules = {};
-    const basePath = process.cwd();
-    const packagesPath = join(basePath, 'packages.json');
-
-    readFile(packagesPath, 'utf-8', (err, content) => {
-      if (err) {
-        return;
-      }
-      const pkg = JSON.parse(content);
-      pkg.dependencies;
-    })
-  }
-
   private getLoadedModules() {
     const loadedModules = {};
     const dirname = process.cwd();
     const modules = require.cache;
-
 
     Object.entries(modules).forEach(([key, val]) => {
       const moduleName = key.replace(dirname, '');

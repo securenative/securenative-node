@@ -10,6 +10,7 @@ const SIGNATURE_KEY = 'x-securenative';
 export interface IMiddleware {
   verifyWebhook(...params: any[]);
   verifyRequest(...params: any[]);
+  errorHandler(...params: any[]);
 }
 
 export abstract class Middleware {

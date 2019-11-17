@@ -1,6 +1,8 @@
 
 import { SecureNativeOptions } from './securenative-options';
-import { Event } from './event';
+import IEvent from './events/event';
+import { EventKinds } from './events/event-kinds';
+import { createEvent } from './events/event-factory';
 import { EventOptions } from './event-options';
 import EventManager from './event-manager';
 import RiskResult from './risk-result';
@@ -12,38 +14,18 @@ import InterceptorManager from './interceptors/interceptor-manager';
 import { decrypt } from './utils';
 import ActionType from './action-type';
 import { Logger } from './logger';
+import AgentLoginEvent from './events/agent-login-event';
 
 const MAX_CUSTOM_PARAMS = 6;
-const defaultOptions: SecureNativeOptions = {
-  apiUrl: 'https://api.securenative.com/collector/api/v1',
-  interval: 1000,
-  maxEvents: 1000,
-  timeout: 1500,
-  autoSend: true
-};
 
 export default class SecureNative {
   private eventManager: EventManager;
-  private options: SecureNativeOptions;
   public middleware: IMiddleware;
-  public moduleManager: ModuleManager;
 
-  constructor(public apiKey: string, options: SecureNativeOptions = defaultOptions) {
-    if (!apiKey) {
-      throw new Error('You must pass your SecureNative api key');
-    }
-    Logger.initLogger(options);
-    this.options = Object.assign({}, defaultOptions, options);
-    this.eventManager = new EventManager(apiKey, this.options);
-    this.moduleManager = new ModuleManager();
+  constructor(public moduleManager: ModuleManager, private options: SecureNativeOptions) { }
 
-    this.middleware = createMiddleware(this);
-    this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware);
-    this.middleware.verifyRequest = this.middleware.verifyRequest.bind(this.middleware);
-
-    if (options.enableInterception) {
-      InterceptorManager.applyInterceptors(this.moduleManager, this.middleware.verifyRequest);
-    }
+  public get apiKey(): string {
+    return this.options.apiKey;
   }
 
   public track(opts: EventOptions, req?: any) {
@@ -53,14 +35,15 @@ export default class SecureNative {
     }
 
     const requestUrl = `${this.options.apiUrl}/track`;
-    const event: Event = this.eventManager.buildEvent(req, opts);
+
+    const event = createEvent(EventKinds.SDK, req, opts, this.options);
     this.eventManager.sendAsync(event, requestUrl);
   }
 
   public async verify(opts: EventOptions, req?: any): Promise<VerifyResult> {
     Logger.debug("Verify risk call", opts);
     const requestUrl = `${this.options.apiUrl}/verify`;
-    const event: Event = this.eventManager.buildEvent(req, opts);
+    const event = createEvent(EventKinds.SDK, req, opts, this.options);
 
     try {
       const result = await this.eventManager.sendSync(event, requestUrl);
@@ -79,7 +62,7 @@ export default class SecureNative {
   public async risk(opts: EventOptions, req?: any): Promise<RiskResult> {
     Logger.debug("Risk call", opts);
     const requestUrl = `${this.options.apiUrl}/risk`;
-    const event: Event = this.eventManager.buildEvent(req, opts);
+    const event = createEvent(EventKinds.SDK, req, opts, this.options);
     try {
       const result = await this.eventManager.sendSync(event, requestUrl);
       const data = decrypt(result.data, this.apiKey);
@@ -98,7 +81,79 @@ export default class SecureNative {
   public flow(flowId: number, opts: EventOptions, req?: any): Promise<RiskResult> {
     Logger.debug("Flow call:", flowId);
     const requestUrl = `${this.options.apiUrl}/flow/${flowId}`;
-    const event: Event = this.eventManager.buildEvent(req, opts);
+    const event = createEvent(EventKinds.SDK, req, opts, this.options);
     return this.eventManager.sendSync(event, requestUrl);
+  }
+
+  private async agentLogin(): Promise<string> {
+    Logger.debug("Performing agent login");
+    const requestUrl = `${this.options.apiUrl}/agent-login`;
+
+    const framework = this.moduleManager.framework;
+    const frameworkVersion = this.moduleManager.pkg.dependencies[this.moduleManager.framework];
+
+    const event = createEvent(EventKinds.AGENT_LOGIN, framework, frameworkVersion, this.options.appName);
+    try {
+      const { session } = await new EventManager(this.options, '').sendSync(event, requestUrl);
+      Logger.debug(`Agent successfuly logged-in, session ${session}`);
+      return session;
+    } catch (ex) {
+      Logger.debug("Failed to perform agent login", ex);
+    }
+    return null;
+  }
+
+  private async agentLogout(): Promise<boolean> {
+    Logger.debug("Performing agent login");
+    const requestUrl = `${this.options.apiUrl}/agent-logout`;
+    const event = createEvent(EventKinds.AGENT_LOGOUT);
+
+    try {
+      this.eventManager.sendSync(event, requestUrl);
+      Logger.debug('Agent successfuly logged-out');
+      return true;
+    } catch (ex) {
+      Logger.debug("Failed to perform agent logout", ex);
+    }
+    return false;
+  }
+
+  public async startAgent(): Promise<boolean> {
+    Logger.debug("Attempting to start agent");
+    if (!this.options.apiKey) {
+      throw new Error('You must pass your SecureNative api key');
+    }
+
+    if (this.options.disable) {
+      Logger.debug("Skipping agent start");
+      return false;
+    }
+
+    // obtain session
+    const session = await this.agentLogin();
+    if (session) {
+      this.eventManager = new EventManager(this.options, session);
+      this.eventManager.startEventsPersist();
+      // create middleware
+      this.middleware = createMiddleware(this);
+      this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware);
+      this.middleware.verifyRequest = this.middleware.verifyRequest.bind(this.middleware);
+
+      // apply interceptors
+      InterceptorManager.applyInterceptors(this.moduleManager, this.middleware.verifyRequest, this.middleware.errorHandler);
+
+      Logger.debug("Agent successfuly started!");
+      return true;
+    }
+
+    Logger.debug("Unable to start agent!");
+    return false;
+  }
+
+  public async stopAgent(): Promise<any> {
+    const status = await this.agentLogout();
+    if (status) {
+      await this.eventManager.stopEventsPersist();
+    }
   }
 }

@@ -57,4 +57,8 @@ export default class KoaMiddleware extends Middleware implements IMiddleware {
         break;
     }
   }
+
+  async errorHandler(...params: any[]) {
+    throw new Error("Method not implemented.");
+  }
 }

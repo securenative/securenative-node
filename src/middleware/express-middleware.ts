@@ -52,4 +52,8 @@ export default class ExpressMiddleware extends Middleware implements IMiddleware
       }
     }
   }
+
+  async errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
+    next(err);
+  }
 }
