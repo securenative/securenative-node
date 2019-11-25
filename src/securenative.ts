@@ -99,7 +99,7 @@ export default class SecureNative {
     const event = createEvent(EventKinds.AGENT_LOGIN, framework, frameworkVersion, this.options.appName);
     try {
       const { sessionId } = await this.eventManager.sendSync(event, requestUrl);
-      Logger.debug(`Agent successfuly logged-in, sessionId ${sessionId}`);
+      Logger.debug(`Agent successfuly logged-in, sessionId: ${sessionId}`);
       return sessionId;
     } catch (ex) {
       Logger.debug("Failed to perform agent login", ex);

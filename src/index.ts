@@ -28,13 +28,12 @@ if (compareVersions(process.version, config.minSupportedVersion) < 0) {
 } else {
   const secureNative = new SecureNative(moduleManager, config);
 
-  const exitHandler = (options, exitCode) => {
-    Logger.debug('Received exit signal', exitCode);
-    secureNative.stopAgent().catch(() => { });
-  }
-
   ['exit', 'SIGINT', 'SIGUSR1', 'SIGUSR2', 'uncaughtException', 'SIGTERM'].forEach((eventType: any) => {
-    process.on(eventType, exitHandler.bind(null, eventType));
+    process.on(eventType, (exitCode) => {
+      Logger.debug('Received exit signal', exitCode);
+      //cleanup
+      secureNative.stopAgent().finally(() => process.exit());
+    });
   });
   process.once('beforeExit', function () {
     secureNative.stopAgent().catch(() => { });
