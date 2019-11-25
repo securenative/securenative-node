@@ -11,13 +11,14 @@ export default class ExpressInterceptor implements Interceptor {
   }
 
   canExecute(): boolean {
-    return this.getModule() !== null;
+    return this.getModule() !== null && this.getModule() !== undefined;
   }
 
   intercept(reqMiddleware, errMiddleware) {
     if (this.canExecute()) {
       this.moduleManger.framework = this.name;
       const expressModule = this.getModule();
+      console.log(expressModule);
       const lazyrouter = expressModule.exports.application.lazyrouter;
 
       expressModule.exports.application.lazyrouter = function () {

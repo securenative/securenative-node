@@ -19,10 +19,14 @@ import AgentLoginEvent from './events/agent-login-event';
 const MAX_CUSTOM_PARAMS = 6;
 
 export default class SecureNative {
+  private isAgentStarted: boolean = false;
   private eventManager: EventManager;
   public middleware: IMiddleware;
+  public lazyOperation: Promise<any> = Promise.resolve();
 
-  constructor(public moduleManager: ModuleManager, private options: SecureNativeOptions) { }
+  constructor(public moduleManager: ModuleManager, private options: SecureNativeOptions) {
+    this.eventManager = new EventManager(this.options);
+  }
 
   public get apiKey(): string {
     return this.options.apiKey;
@@ -94,17 +98,17 @@ export default class SecureNative {
 
     const event = createEvent(EventKinds.AGENT_LOGIN, framework, frameworkVersion, this.options.appName);
     try {
-      const { session } = await new EventManager(this.options, '').sendSync(event, requestUrl);
-      Logger.debug(`Agent successfuly logged-in, session ${session}`);
-      return session;
+      const { sessionId } = await this.eventManager.sendSync(event, requestUrl);
+      Logger.debug(`Agent successfuly logged-in, sessionId ${sessionId}`);
+      return sessionId;
     } catch (ex) {
       Logger.debug("Failed to perform agent login", ex);
     }
-    return null;
+    return Promise.reject(null);
   }
 
   private async agentLogout(): Promise<boolean> {
-    Logger.debug("Performing agent login");
+    Logger.debug("Performing agent logout");
     const requestUrl = `${this.options.apiUrl}/agent-logout`;
     const event = createEvent(EventKinds.AGENT_LOGOUT);
 
@@ -115,45 +119,60 @@ export default class SecureNative {
     } catch (ex) {
       Logger.debug("Failed to perform agent logout", ex);
     }
-    return false;
+    return Promise.reject(false);
   }
 
   public async startAgent(): Promise<boolean> {
-    Logger.debug("Attempting to start agent");
-    if (!this.options.apiKey) {
-      throw new Error('You must pass your SecureNative api key');
-    }
+    return this.lazyOperation = new Promise(async (resolve, reject) => {
 
-    if (this.options.disable) {
-      Logger.debug("Skipping agent start");
-      return false;
-    }
+      if (!this.isAgentStarted) {
+        Logger.debug("Attempting to start agent");
+        if (!this.options.apiKey) {
+          throw new Error('You must pass your SecureNative api key');
+        }
 
-    // obtain session
-    const session = await this.agentLogin();
-    if (session) {
-      this.eventManager = new EventManager(this.options, session);
-      this.eventManager.startEventsPersist();
-      // create middleware
-      this.middleware = createMiddleware(this);
-      this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware);
-      this.middleware.verifyRequest = this.middleware.verifyRequest.bind(this.middleware);
+        if (this.options.disable) {
+          Logger.debug("Skipping agent start");
+          return false;
+        }
 
-      // apply interceptors
-      InterceptorManager.applyInterceptors(this.moduleManager, this.middleware.verifyRequest, this.middleware.errorHandler);
+        // obtain session
+        const sessionId = await this.agentLogin();
+        if (sessionId) {
+          this.eventManager.setSessionId(sessionId);
+          this.eventManager.startEventsPersist();
+          // create middleware
+          this.middleware = createMiddleware(this);
+          this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware);
+          this.middleware.verifyRequest = this.middleware.verifyRequest.bind(this.middleware);
 
-      Logger.debug("Agent successfuly started!");
-      return true;
-    }
+          // apply interceptors
+          InterceptorManager.applyInterceptors(this.moduleManager, this.middleware.verifyRequest, this.middleware.errorHandler);
+          this.isAgentStarted = true;
 
-    Logger.debug("Unable to start agent!");
-    return false;
+          Logger.debug("Agent successfuly started!");
+          resolve(true);
+        } else {
+          Logger.debug("No session obtained, unable to start agent!");
+        }
+      } else {
+        Logger.debug("Agent already started, skipping");
+      }
+      reject(false);
+    });
   }
 
   public async stopAgent(): Promise<any> {
-    const status = await this.agentLogout();
-    if (status) {
-      await this.eventManager.stopEventsPersist();
+    // if there is pending operation wait for compleation
+    await this.lazyOperation;
+
+    if (this.isAgentStarted) {
+      Logger.debug("Atempting to stop agent");
+      const status = await this.agentLogout();
+      if (status) {
+        await this.eventManager.stopEventsPersist();
+        this.isAgentStarted = false;
+      }
     }
   }
 }

@@ -12,20 +12,24 @@ import { Logger } from './logger';
 export default class EventManager {
   private defaultFetchOptions: FetchOptions;
   private events: Array<FetchOptions> = [];
-  private sendEnabled: Boolean = true;
+  private sendEnabled: Boolean = false;
   private timeoutId = null;
 
-  constructor(private options: SecureNativeOptions, private session: string) {
+  constructor(private options: SecureNativeOptions) {
     this.defaultFetchOptions = {
       url: options.apiUrl,
       options: {
         method: 'post',
+        timeout: this.options.timeout,
         headers: {
-          'Authorization': this.options.apiKey,
-          'SN-Agent-Session': session
+          'Authorization': this.options.apiKey
         }
       }
     };
+  }
+
+  public setSessionId(sessionId: string) {
+    this.defaultFetchOptions.options.headers['SN-Agent-Session'] = sessionId;
   }
 
   public async sendSync(event: IEvent, requestUrl: string): Promise<any> {
@@ -34,12 +38,12 @@ export default class EventManager {
     });
 
     try {
-      const resp = await promiseTimeout(fetch(requestUrl, eventOptions), this.options.timeout);
-      Logger.debug("Successfuly sent event ", eventOptions);
+      const resp = await fetch(requestUrl, eventOptions);
+      Logger.debug("Successfuly sent event", eventOptions);
       const body = await resp.json();
       return body;
     } catch (ex) {
-      Logger.debug("Failed to sent event ", eventOptions);
+      Logger.debug("Failed to sent event", eventOptions);
       return Promise.reject();
     }
   }
@@ -79,6 +83,7 @@ export default class EventManager {
   public startEventsPersist() {
     if (this.options.autoSend && !this.timeoutId) {
       Logger.debug("Starting automatic event persistence");
+      this.sendEnabled = true;
       this.timeoutId = setInterval(async () => { await this.sendEvents() }, this.options.interval);
     } else {
       Logger.debug("Automatic event persistence disabled, you should manualy persist events");
@@ -90,7 +95,9 @@ export default class EventManager {
       Logger.debug("Stopping automatic event persistence");
       clearInterval(this.timeoutId);
       // drain event queue
-      await this.sendEvents()
+      await this.sendEvents();
+      this.sendEnabled = false;
+      Logger.debug("Stoped event persistence");
     }
   }
 }

@@ -11,7 +11,7 @@ export default class KoaInterceptor implements Interceptor {
   }
 
   canExecute(): boolean {
-    return this.getModule() !== null;
+    return this.getModule() !== null && this.getModule() !== undefined;
   }
 
   intercept(reqMiddleware, errMiddleware) {
