@@ -35,7 +35,9 @@ if (compareVersions(process.version, config.minSupportedVersion) < 0) {
   process.once('beforeExit', function () {
     secureNative.stopAgent().catch(() => { });
   });
-  secureNative.startAgent().catch(() => { });
+  secureNative.startAgent().catch((e) => {
+    process.exit(128);
+  });
 }
 
 export {

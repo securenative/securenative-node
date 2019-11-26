@@ -126,7 +126,8 @@ export default class SecureNative {
       if (!this.isAgentStarted) {
         Logger.debug("Attempting to start agent");
         if (!this.options.apiKey) {
-          throw new Error('You must pass your SecureNative api key');
+          console.error('You must pass your SecureNative api key!');
+          reject(false);
         }
 
         if (this.options.disable) {

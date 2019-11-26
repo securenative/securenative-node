@@ -11,28 +11,24 @@ npm i @securenative/sdk
 ## Configuration
 
 ```js
-import { SecureNative } from '@securenative/sdk';
+const { secureNative } = require('@securenative/sdk');
 
-const secureNative = new SecureNative({ apiKey: 'YOUR_API_KEY' });
 ```
 
 | Option | Type | Optional | Default Value | Description |
 | -------| -------| -------| -------| -------------------------------------------------|
-| apiKey | string | false | none | SecureNative api key |
-| apiUrl | string | true | https://api.securenative.com/v1/collector | Default api base address|
-| interval| number | true | 1000 | Default interval for SDK to try to persist events|  
-| maxEvents | number | true | 1000 | Max in-memory events queue| 
-| timeout | number | true | 1500 | API call timeout in ms|
-| autoSend | Boolean | true | true | Should api auto send the events|
+| SECURENATIVE_API_KEY | string | false | none | SecureNative api key |
+| SECURENATIVE_API_URL | string | true | https://api.securenative.com/v1/collector | Default api base address|
+| SECURENATIVE_INTERVAL| number | true | 1000 | Default interval for SDK to try to persist events|  
+| SECURENATIVE_MAX_EVENTS | number | true | 1000 | Max in-memory events queue| 
+| SECURENATIVE_TIMEOUT | number | true | 1500 | API call timeout in ms|
+| SECURENATIVE_AUTO_SEND | Boolean | true | true | Should api auto send the events|
+| SECURENATIVE_DEBUG_MODE | Boolean | true | false | Displays logging to standard output|
 
 ## Event tracking
 
 ```js
-import { SecureNative, EventTypes } from '@securenative/sdk';
-or
-const { SecureNative, EventTypes } = require('@securenative/sdk'); // if your using ES5
-
-const secureNative = new SecureNative('YOUR_API_KEY', { // optionally pass params here  });
+const { secureNative, EventTypes } = require('@securenative/sdk'); // if your using ES5
 
 secureNative.track({
     eventType: EventTypes.LOG_IN,
