@@ -1,7 +1,7 @@
 import IEvent from "./event";
 import { KeyValuePair } from "../key-value-pair";
 import { EventOptions } from "../event-options";
-import { cookieIdFromRequest, secureheaderFromRequest, decrypt, clientIpFromRequest, remoteIpFromRequest, userAgentFromRequest } from "../utils";
+import { cookieIdFromRequest, secureheaderFromRequest, decrypt, clientIpFromRequest, remoteIpFromRequest, userAgentFromRequest } from "../utils/utils";
 import { Logger } from "../logger";
 import { v4 } from "uuid";
 import EventTypes from "../event-types";

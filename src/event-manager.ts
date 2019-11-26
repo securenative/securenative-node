@@ -3,10 +3,10 @@ import fetch from 'node-fetch';
 import { EventOptions } from './event-options';
 import EventTypes from './event-types';
 import IEvent from './events/event';
-import { cookieIdFromRequest, secureheaderFromRequest, clientIpFromRequest, remoteIpFromRequest, userAgentFromRequest } from './utils';
+import { cookieIdFromRequest, secureheaderFromRequest, clientIpFromRequest, remoteIpFromRequest, userAgentFromRequest } from './utils/utils';
 import { SecureNativeOptions } from './securenative-options';
 import { FetchOptions } from './fetch-options';
-import { promiseTimeout, decrypt } from './utils';
+import { promiseTimeout, decrypt } from './utils/utils';
 import { Logger } from './logger';
 
 export default class EventManager {

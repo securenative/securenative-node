@@ -11,7 +11,7 @@ export default class ModuleManager {
   get Modules(): Object {
     return this._modules;
   }
-
+  
   private getLoadedModules() {
     const loadedModules = {};
     const dirname = process.cwd();

@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { Logger } from './logger';
 import { KeyValuePair } from './key-value-pair';
-import { calculateHash } from './utils';
+import { calculateHash } from './utils/utils';
 
 export class Package {
   name: string;

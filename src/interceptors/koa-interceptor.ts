@@ -1,17 +1,23 @@
+import { join } from "path";
 import Interceptor from './interceptor';
 import ModuleManager from '../module-manager';
 import InterceptModules from './intercept-modules';
+import { isModuleExists } from './../utils/utils';
+import { Logger } from './../logger';
 
 export default class KoaInterceptor implements Interceptor {
   private name = 'koa';
+  private modulePath = join(process.cwd(), InterceptModules.Koa);
   constructor(private moduleManger: ModuleManager) { }
 
   getModule() {
-    return this.moduleManger.Modules[InterceptModules.Koa];
+    return require(this.modulePath);
   }
 
   canExecute(): boolean {
-    return this.getModule() !== null && this.getModule() !== undefined;
+    const exists = isModuleExists(this.modulePath);
+    Logger.debug(`Checking ${InterceptModules.Express} module, found: ${exists}`);
+    return exists;
   }
 
   intercept(reqMiddleware, errMiddleware) {

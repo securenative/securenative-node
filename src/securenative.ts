@@ -1,6 +1,5 @@
 
 import { SecureNativeOptions } from './securenative-options';
-import IEvent from './events/event';
 import { EventKinds } from './events/event-kinds';
 import { createEvent } from './events/event-factory';
 import { EventOptions } from './event-options';
@@ -11,10 +10,9 @@ import { IMiddleware } from './middleware/middleware';
 import { createMiddleware } from './middleware/midlleware-factory';
 import ModuleManager from './module-manager';
 import InterceptorManager from './interceptors/interceptor-manager';
-import { decrypt } from './utils';
+import { decrypt } from './utils/utils';
 import ActionType from './action-type';
 import { Logger } from './logger';
-import AgentLoginEvent from './events/agent-login-event';
 
 const MAX_CUSTOM_PARAMS = 6;
 
@@ -133,21 +131,22 @@ export default class SecureNative {
 
         if (this.options.disable) {
           Logger.debug("Skipping agent start");
-          return false;
+          resolve(false);
         }
+
+        // create middleware
+        this.middleware = createMiddleware(this);
+        this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware);
+        this.middleware.verifyRequest = this.middleware.verifyRequest.bind(this.middleware);
+
+        // apply interceptors
+        InterceptorManager.applyInterceptors(this.moduleManager, this.middleware.verifyRequest, this.middleware.errorHandler);
 
         // obtain session
         const sessionId = await this.agentLogin();
         if (sessionId) {
           this.eventManager.setSessionId(sessionId);
           this.eventManager.startEventsPersist();
-          // create middleware
-          this.middleware = createMiddleware(this);
-          this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware);
-          this.middleware.verifyRequest = this.middleware.verifyRequest.bind(this.middleware);
-
-          // apply interceptors
-          InterceptorManager.applyInterceptors(this.moduleManager, this.middleware.verifyRequest, this.middleware.errorHandler);
           this.isAgentStarted = true;
 
           Logger.debug("Agent successfuly started!");

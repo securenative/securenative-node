@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { calculateHash } from './../utils';
+import { calculateHash } from './utils';
 
 const { platform }: NodeJS.Process = process,
   win32RegBinPath = {

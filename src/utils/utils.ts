@@ -162,6 +162,16 @@ function calculateHash(str: string): string {
   return createHash('sha256').update(str).digest('hex');
 }
 
+const isModuleExists = (path) => {
+  try {
+    require.resolve(path);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+
 export {
   clientIpFromRequest,
   remoteIpFromRequest,
@@ -174,5 +184,6 @@ export {
   decrypt,
   toNumber,
   toBoolean,
-  calculateHash
+  calculateHash,
+  isModuleExists
 }
