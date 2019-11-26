@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import SecureNative from './../securenative';
 import { Middleware, IMiddleware } from './middleware';
 import ActionType from '../action-type';
+import { Logger } from './../logger';
 
 export default class ExpressMiddleware extends Middleware implements IMiddleware {
   private _routes: Array<string> = [];
@@ -24,7 +25,6 @@ export default class ExpressMiddleware extends Middleware implements IMiddleware
   }
 
   async verifyRequest(req: Request, res: Response, next: NextFunction) {
-
     if (this._routes.length == 0) {
       req.app._router.stack.forEach(middleware => {
         if (middleware.route) {
@@ -34,11 +34,12 @@ export default class ExpressMiddleware extends Middleware implements IMiddleware
     }
 
     if (this._routes.includes(req.path)) {
+      Logger.debug('Intercepting request');
       const resp = await super.executeRisk(req, this.secureNative);
 
       switch (resp.action) {
         case ActionType.ALLOW:
-          return next()
+          return next();
         case ActionType.BLOCK:
           if (req.xhr || req.headers.accept.indexOf('json') > -1) {
             res.status(400).json({ message: 'Request Blocked' });
@@ -51,5 +52,11 @@ export default class ExpressMiddleware extends Middleware implements IMiddleware
           break;
       }
     }
+
+    return next();
+  }
+
+  async errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
+    next(err);
   }
 }
