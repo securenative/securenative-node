@@ -2,80 +2,53 @@ import { v4 } from 'uuid';
 import fetch from 'node-fetch';
 import { EventOptions } from './event-options';
 import EventTypes from './event-types';
-import { Event } from './event';
-import { cookieIdFromRequest, secureheaderFromRequest, clientIpFromRequest, remoteIpFromRequest, userAgentFromRequest } from './utils';
+import IEvent from './events/event';
+import { cookieIdFromRequest, secureheaderFromRequest, clientIpFromRequest, remoteIpFromRequest, userAgentFromRequest } from './utils/utils';
 import { SecureNativeOptions } from './securenative-options';
 import { FetchOptions } from './fetch-options';
-import { promiseTimeout, decrypt } from './utils';
-import { version } from './../package.json';
+import { promiseTimeout, decrypt } from './utils/utils';
 import { Logger } from './logger';
 
 export default class EventManager {
   private defaultFetchOptions: FetchOptions;
   private events: Array<FetchOptions> = [];
-  private sendEnabled: Boolean = true;
+  private sendEnabled: Boolean = false;
+  private timeoutId = null;
 
-  constructor(private apiKey: string, private options: SecureNativeOptions) {
+  constructor(private options: SecureNativeOptions) {
     this.defaultFetchOptions = {
-      url: options.apiUrl || 'https://api.securenative.com/v1/collector',
+      url: options.apiUrl,
       options: {
         method: 'post',
+        timeout: this.options.timeout,
         headers: {
-          'User-Agent': 'SecureNative-node',
-          'SN-Version': version,
-          'Authorization': apiKey
+          'Authorization': this.options.apiKey
         }
       }
     };
-
-    this.startEventsPersist();
   }
 
-  public buildEvent(req: any, opts: EventOptions): Event {
-    const cookie = cookieIdFromRequest(req, this.options) || secureheaderFromRequest(req) || '{}';
-    Logger.debug("Cookie from request", cookie);
-    const cookieDecoded = decrypt(cookie, this.apiKey);
-    Logger.debug("Cookie decoded", cookieDecoded);
-    const clientFP = JSON.parse(cookieDecoded) || {};
-    Logger.debug("Extracted user FP:", clientFP);
-    const eventType = opts.eventType || EventTypes.LOG_IN;
-
-    const event = {
-      eventType,
-      cid: clientFP.cid || '',
-      vid: v4(),
-      fp: clientFP.fp || '',
-      ip: opts.ip || clientIpFromRequest(req),
-      remoteIP: opts.remoteIp || remoteIpFromRequest(req),
-      userAgent: opts.userAgent || userAgentFromRequest(req),
-      user: opts.user || {
-        id: 'anonymous'
-      },
-      ts: Date.now(),
-      device: opts.device || {},
-      params: opts.params
-    }
-    Logger.debug("Built new event", event);
-    return event;
+  public setSessionId(sessionId: string) {
+    this.defaultFetchOptions.options.headers['SN-Agent-Session'] = sessionId;
   }
 
-  public async sendSync(event: Event, requestUrl: string): Promise<any> {
+  public async sendSync(event: IEvent, requestUrl: string): Promise<any> {
     const eventOptions = Object.assign({}, this.defaultFetchOptions.options, {
       body: JSON.stringify(event)
     });
 
     try {
-      const resp = await promiseTimeout(fetch(requestUrl, eventOptions), this.options.timeout);
-      Logger.debug("Successfuly sent event ", eventOptions);
+      const resp = await fetch(requestUrl, eventOptions);
+      Logger.debug("Successfuly sent event", eventOptions);
       const body = await resp.json();
       return body;
     } catch (ex) {
-      Logger.debug("Failed to sent event ", eventOptions);
+      Logger.debug("Failed to sent event", eventOptions);
       return Promise.reject();
     }
   }
 
-  public sendAsync(event: Event, requestUrl: string) {
+  public sendAsync(event: IEvent, requestUrl: string) {
     if (this.events.length >= this.options.maxEvents) {
       this.events.shift();
     }
@@ -107,12 +80,24 @@ export default class EventManager {
     }
   }
 
-  private startEventsPersist() {
-    if (this.options.autoSend) {
+  public startEventsPersist() {
+    if (this.options.autoSend && !this.timeoutId) {
       Logger.debug("Starting automatic event persistence");
-      setInterval(async () => { await this.sendEvents() }, this.options.interval);
+      this.sendEnabled = true;
+      this.timeoutId = setInterval(async () => { await this.sendEvents() }, this.options.interval);
     } else {
-      Logger.debug("Automatic event persistence diabled, you should manualy persist events");
+      Logger.debug("Automatic event persistence disabled, you should manualy persist events");
+    }
+  }
+
+  public async stopEventsPersist() {
+    if (this.timeoutId) {
+      Logger.debug("Stopping automatic event persistence");
+      clearInterval(this.timeoutId);
+      // drain event queue
+      await this.sendEvents();
+      this.sendEnabled = false;
+      Logger.debug("Stoped event persistence");
     }
   }
 }

@@ -1,29 +1,36 @@
+import { join } from "path";
 import Interceptor from './interceptor';
 import ModuleManager from '../module-manager';
 import InterceptModules from './intercept-modules';
+import { isModuleExists } from './../utils/utils';
+import { Logger } from './../logger';
 
 export default class KoaInterceptor implements Interceptor {
-
+  private name = 'koa';
+  private modulePath = join(process.cwd(), InterceptModules.Koa);
   constructor(private moduleManger: ModuleManager) { }
 
   getModule() {
-    return this.moduleManger.Modules[InterceptModules.Koa];
+    return require(this.modulePath);
   }
 
   canExecute(): boolean {
-    return this.getModule() !== null;
+    const exists = isModuleExists(this.modulePath);
+    Logger.debug(`Checking ${InterceptModules.Express} module, found: ${exists}`);
+    return exists;
   }
 
-  intercept(middleware) {
+  intercept(reqMiddleware, errMiddleware) {
     if (this.canExecute()) {
+      this.moduleManger.framework = this.name;
       const koaModule = this.getModule();
       const app = koaModule.exports.prototype.use;
 
       koaModule.exports.prototype.use = function () {
-        app.apply(this, arguments);      
+        app.apply(this, arguments);
         if (!this.middlewareLoaded) {
           this.middlewareLoaded = true;
-          this.middleware.unshift(middleware);
+          this.middleware.unshift(reqMiddleware);
         }
       }
     }

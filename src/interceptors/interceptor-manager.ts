@@ -7,8 +7,8 @@ export default class InterceptorManager {
     return [new ExpressInterceptor(moduleManager)];
   }
 
-  static applyInterceptors(moduleManager: ModuleManager, middleware: any) {
+  static applyInterceptors(moduleManager: ModuleManager, reqMiddleware: any,  errMiddleware: any) {
     const interceptors = InterceptorManager.getAllInterceptors(moduleManager);
-    interceptors.forEach(interceptor => interceptor.intercept(middleware));
+    interceptors.forEach(interceptor => interceptor.intercept(reqMiddleware, errMiddleware));
   }
 }

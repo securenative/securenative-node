@@ -1,15 +1,17 @@
 import { createHmac, timingSafeEqual } from 'crypto';
-import { cookieIdFromRequest, clientIpFromRequest, userAgentFromRequest } from './../utils';
-import { decrypt } from './../utils';
+import { cookieIdFromRequest, clientIpFromRequest, userAgentFromRequest } from '../utils/utils';
+import { decrypt } from '../utils/utils';
 import EventTypes from './../event-types';
 import ActionType from "./../action-type";
 import RiskResult from './../risk-result';
+import { Logger } from './../logger';
 
 const SIGNATURE_KEY = 'x-securenative';
 
 export interface IMiddleware {
   verifyWebhook(...params: any[]);
   verifyRequest(...params: any[]);
+  errorHandler(...params: any[]);
 }
 
 export abstract class Middleware {
@@ -32,6 +34,7 @@ export abstract class Middleware {
     let resp: RiskResult = null;
 
     if (!cookie) {
+      Logger.debug("Cookie not found");
       resp = await secureNative.risk({
         eventType: EventTypes.RISK,
         ip: clientIpFromRequest(req),
@@ -40,6 +43,7 @@ export abstract class Middleware {
     } else {
       const cookieDecoded = decrypt(cookie, secureNative.apiKey);
       resp = JSON.parse(cookieDecoded) || {};
+      Logger.debug("Cookie found", resp);
     }
 
     return resp;

@@ -29,7 +29,7 @@ export class Logger {
 
   static debug(msg: string, ...args: any[]) {
     if (Logger.log) {
-      Logger.log.debug(msg, args);
+      (args.length === 0) ? Logger.log.debug(msg) : Logger.log.debug(msg, args);
     }
   }
 }

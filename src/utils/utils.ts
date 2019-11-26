@@ -1,6 +1,7 @@
 import { parse } from 'cookie';
 import { isV4Format, isV6Format, isPublic, isLoopback, isEqual } from 'ip';
 import { createDecipheriv, randomBytes, createCipheriv } from 'crypto';
+import { createHash } from 'crypto';
 
 const ALGORITHM = 'aes-256-cbc';
 const BLOCK_SIZE = 16;
@@ -135,6 +136,42 @@ function encrypt(plainText, cipherKey: string) {
   return cipherText;
 }
 
+// compare node versions
+function compareVersions(v1: string, v2: string) {
+  let v1parts: Array<any> = v1.replace('v', '').split('.');
+  let v2parts: Array<any> = v2.replace('v', '').split('.');
+  const k = Math.min(v1.length, v2.length);
+  for (let i = 0; i < k; ++i) {
+    v1parts[i] = parseInt(v1[i], 10);
+    v2parts[i] = parseInt(v2[i], 10);
+    if (v1[i] > v2[i]) return 1;
+    if (v1[i] < v2[i]) return -1;
+  }
+  return v1.length == v2.length ? 0 : (v1.length < v2.length ? -1 : 1);
+}
+
+function toNumber(str, defaultValue: number) {
+  return parseInt(str) || defaultValue;
+}
+
+function toBoolean(str, defaultValue: boolean) {
+  return (str === "true" || str === "1" || str === "false" || str === "0") ? Boolean(str) : defaultValue;
+}
+
+function calculateHash(str: string): string {
+  return createHash('sha256').update(str).digest('hex');
+}
+
+const isModuleExists = (path) => {
+  try {
+    require.resolve(path);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+
 export {
   clientIpFromRequest,
   remoteIpFromRequest,
@@ -142,6 +179,11 @@ export {
   cookieIdFromRequest,
   secureheaderFromRequest,
   promiseTimeout,
+  compareVersions,
   encrypt,
-  decrypt
+  decrypt,
+  toNumber,
+  toBoolean,
+  calculateHash,
+  isModuleExists
 }
