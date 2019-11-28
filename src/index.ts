@@ -25,7 +25,7 @@ if (compareVersions(process.version, config.minSupportedVersion) < 0) {
   console.error(`This version of Node.js ${process.version} isn't supported by SecureNative, minimum required version is ${config.minSupportedVersion}`);
   console.error(`Visit our docs to find out more: https://docs.securenative.com/docs/integrations/sdk/#install-via-npm-javascript`);
 } else {
-  ['exit', 'SIGINT', 'SIGUSR1', 'SIGUSR2', 'uncaughtException', 'SIGTERM'].forEach((eventType: any) => {
+  ['exit', 'SIGINT', 'SIGUSR1', 'SIGUSR2', 'SIGTERM'].forEach((eventType: any) => {
     process.on(eventType, (exitCode) => {
       Logger.debug('Received exit signal', exitCode);
       //cleanup
