@@ -5,6 +5,7 @@ import EventTypes from './../event-types';
 import ActionType from "./../action-type";
 import RiskResult from './../risk-result';
 import { Logger } from './../logger';
+import SecureNative from '../securenative';
 
 const SIGNATURE_KEY = 'x-securenative';
 
@@ -15,6 +16,8 @@ export interface IMiddleware {
 }
 
 export abstract class Middleware {
+  constructor(protected secureNative: SecureNative) { }
+
   verifySignature(headers, body, apiKey): Boolean {
     const signature = headers[SIGNATURE_KEY] || '';
     // calculating signature
@@ -47,5 +50,19 @@ export abstract class Middleware {
     }
 
     return resp;
+  }
+
+  processResponse(res) {
+    this.setSecurityHeaders(res);
+  }
+
+  private setSecurityHeaders(res) {
+    Object.values(this.secureNative.securityHeaders).filter(h => h.enabled).forEach((securityHeader) => {
+      if (securityHeader.action) {
+        res.setHeader(securityHeader.header, securityHeader.value);
+      } else {
+        res.removeHeader(securityHeader.header);
+      }
+    });
   }
 }

@@ -13,7 +13,7 @@ import InterceptorManager from './interceptors/interceptor-manager';
 import { decrypt } from './utils/utils';
 import ActionType from './action-type';
 import { Logger } from './logger';
-
+import { SecurityHeaders } from './security-headers';
 const MAX_CUSTOM_PARAMS = 6;
 
 export default class SecureNative {
@@ -21,6 +21,7 @@ export default class SecureNative {
   private eventManager: EventManager;
   public middleware: IMiddleware;
   public lazyOperation: Promise<any> = Promise.resolve();
+  public securityHeaders: SecurityHeaders = {};
 
   constructor(public moduleManager: ModuleManager, private options: SecureNativeOptions) {
     this.eventManager = new EventManager(this.options);

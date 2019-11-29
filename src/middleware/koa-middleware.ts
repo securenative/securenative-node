@@ -6,8 +6,8 @@ import ActionType from '../action-type';
 import { readFile } from 'fs';
 
 export default class KoaMiddleware extends Middleware implements IMiddleware {
-  constructor(private secureNative: SecureNative) {
-    super();
+  constructor(secureNative: SecureNative) {
+    super(secureNative);
   }
 
   verifyWebhook(ctx: Context, next: Function) {
@@ -25,11 +25,13 @@ export default class KoaMiddleware extends Middleware implements IMiddleware {
   }
 
   async verifyRequest(ctx: Context, next: Function) {
+    // apply security headers
+    super.processResponse(ctx.res);
     const resp = await super.executeRisk(ctx.req, this.secureNative);
 
     switch (resp.action) {
       case ActionType.ALLOW:
-        return next()
+        return next();
       case ActionType.BLOCK:
         if (ctx.get('X-Requested-With') === 'XMLHttpRequest' || ctx.accepts('json')) {
           ctx.status = 400;

@@ -6,8 +6,8 @@ import { Logger } from './../logger';
 
 export default class ExpressMiddleware extends Middleware implements IMiddleware {
   private _routes: Array<string> = [];
-  constructor(private secureNative: SecureNative) {
-    super();
+  constructor(secureNative: SecureNative) {
+    super(secureNative);
   }
 
   verifyWebhook(req: Request, res: Response, next: NextFunction) {
@@ -25,6 +25,9 @@ export default class ExpressMiddleware extends Middleware implements IMiddleware
   }
 
   async verifyRequest(req: Request, res: Response, next: NextFunction) {
+    // apply security headers
+    super.processResponse(res);
+
     if (this._routes.length == 0) {
       req.app._router.stack.forEach(middleware => {
         if (middleware.route) {
