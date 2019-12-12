@@ -12,7 +12,9 @@ const appPkg: Package = PackageManager.getPackage(join(process.cwd(), PACKAGE_FI
 const config = ConfigurationManager.getConfig();
 
 // set default app name
-ConfigurationManager.setConfigKey('appName', appPkg.name);
+if (!config.appName) {
+  ConfigurationManager.setConfigKey('appName', appPkg.name);
+}
 const moduleManager = new ModuleManager(appPkg);
 const secureNative = new SecureNative(moduleManager, config);
 
