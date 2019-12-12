@@ -28,7 +28,8 @@ export class PackageManager {
       return { key: d, value: pkg.dependencies[d] }
     });
 
-    const dependenciesHash = calculateHash(dependencies.join(','));
+    const deps = dependencies.map(d => `${d.key}:${d.value}`).join(',');
+    const dependenciesHash = calculateHash(deps);
 
     return {
       name: pkg.name,
