@@ -91,7 +91,7 @@ export default class AgentLoginEvent implements IEvent {
     };
 
     this.agent = {
-      type: "Node.js",
+      type: "Server Agent",
       version: agentPkg.version,
       path: __dirname
     };
