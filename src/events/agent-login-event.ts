@@ -71,7 +71,7 @@ export default class AgentLoginEvent implements IEvent {
     };
 
     this.runtime = {
-      type: 'nodejs',
+      type: 'node.js',
       version: process.version,
     };
 
