@@ -46,7 +46,7 @@ export default class EventManager {
       return Promise.reject();
     } catch (ex) {
       Logger.debug("Failed to sent event", eventOptions);
-      return Promise.reject();
+      return Promise.reject(ex);
     }
   }
 

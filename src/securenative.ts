@@ -27,7 +27,6 @@ export default class SecureNative {
 
   constructor(public moduleManager: ModuleManager, private options: SecureNativeOptions) {
     this.eventManager = new EventManager(this.options);
-    this.heartBeatManager = new HeartBeatManager(this.options.interval, this.heartBeat);
   }
 
   public get apiKey(): string {
@@ -93,8 +92,8 @@ export default class SecureNative {
 
   public async heartBeat(opts: EventOptions, req?: any): Promise<any> {
     Logger.debug("HeartBeat", opts);
-    const requestUrl = `${this.options.apiUrl}/heart-beat`;
-    const event = createEvent(EventKinds.HEARTBEAT,  this.options.appName);
+    const requestUrl = `${this.options.apiUrl}/agent-heart-beat`;
+    const event = createEvent(EventKinds.HEARTBEAT, this.options.appName);
     try {
       const result = await this.eventManager.sendSync(event, requestUrl);
       Logger.debug("Successfuly performed heart beat", result);
@@ -116,6 +115,8 @@ export default class SecureNative {
     try {
       const { sessionId } = await this.eventManager.sendSync(event, requestUrl);
       Logger.debug(`Agent successfuly logged-in, sessionId: ${sessionId}`);
+      //start hgeart beats    
+      this.heartBeatManager = new HeartBeatManager(this.options.heartBeatInterval, this.heartBeat.bind(this));
       this.heartBeatManager.startHeartBeatLoop();
       return sessionId;
     } catch (ex) {

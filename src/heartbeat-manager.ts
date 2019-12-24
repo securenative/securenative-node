@@ -7,6 +7,7 @@ export default class HeartBeatManager {
 
   startHeartBeatLoop() {
     Logger.debug(`Agent starting heartbeat`);
+    this.handler();
     this.timeoutId = setInterval(this.handler, this.interval);
   }
 
