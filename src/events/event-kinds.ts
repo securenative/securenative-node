@@ -2,6 +2,7 @@ export enum EventKinds {
   SDK,
   ERROR,
   REQUEST,
+  HEARTBEAT,
   PERFORMANCE,
   AGENT_LOGIN,
   AGENT_LOGOUT

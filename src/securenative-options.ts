@@ -3,6 +3,7 @@ export interface SecureNativeOptions {
   appName: string;
   apiUrl?: string;
   interval?: number;
+  heartBeatInterval?: number;
   maxEvents?: number;
   timeout?: number;
   autoSend?: boolean;

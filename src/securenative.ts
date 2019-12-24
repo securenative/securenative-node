@@ -14,17 +14,20 @@ import { decrypt } from './utils/utils';
 import ActionType from './action-type';
 import { Logger } from './logger';
 import { SecurityHeaders } from './security-headers';
+import HeartBeatManager from './heartbeat-manager';
 const MAX_CUSTOM_PARAMS = 6;
 
 export default class SecureNative {
   private isAgentStarted: boolean = false;
   private eventManager: EventManager;
+  private heartBeatManager: HeartBeatManager;
   public middleware: IMiddleware;
   public lazyOperation: Promise<any> = Promise.resolve();
   public securityHeaders: SecurityHeaders = {};
 
   constructor(public moduleManager: ModuleManager, private options: SecureNativeOptions) {
     this.eventManager = new EventManager(this.options);
+    this.heartBeatManager = new HeartBeatManager(this.options.interval, this.heartBeat);
   }
 
   public get apiKey(): string {
@@ -88,6 +91,20 @@ export default class SecureNative {
     return this.eventManager.sendSync(event, requestUrl);
   }
 
+  public async heartBeat(opts: EventOptions, req?: any): Promise<any> {
+    Logger.debug("HeartBeat", opts);
+    const requestUrl = `${this.options.apiUrl}/heart-beat`;
+    const event = createEvent(EventKinds.HEARTBEAT,  this.options.appName);
+    try {
+      const result = await this.eventManager.sendSync(event, requestUrl);
+      Logger.debug("Successfuly performed heart beat", result);
+      return result;
+    } catch (ex) {
+      Logger.debug("Failed to perform heart beat", ex);
+      return null;
+    }
+  }
+
   private async agentLogin(): Promise<string> {
     Logger.debug("Performing agent login");
     const requestUrl = `${this.options.apiUrl}/agent-login`;
@@ -99,6 +116,7 @@ export default class SecureNative {
     try {
       const { sessionId } = await this.eventManager.sendSync(event, requestUrl);
       Logger.debug(`Agent successfuly logged-in, sessionId: ${sessionId}`);
+      this.heartBeatManager.startHeartBeatLoop();
       return sessionId;
     } catch (ex) {
       Logger.debug("Failed to perform agent login", ex);
@@ -114,6 +132,7 @@ export default class SecureNative {
     try {
       this.eventManager.sendSync(event, requestUrl);
       Logger.debug('Agent successfuly logged-out');
+      this.heartBeatManager.stopHeartBeatLoop();
       return true;
     } catch (ex) {
       Logger.debug("Failed to perform agent logout", ex);
