@@ -53,7 +53,7 @@ export default class ConfigurationManager {
         appName: fileConfig['appName'] || process.env.SECURENATIVE_APP_NAME || '',
         apiUrl: fileConfig['apiUrl'] || process.env.SECURENATIVE_API_URL || 'https://api.securenative.com/collector/api/v1',
         interval: fileConfig['interval'] || toNumber(process.env.SECURENATIVE_INTERVAL, 1000),
-        heartBeatInterval: fileConfig['heartBeatInterval'] || toNumber(process.env.SECURENATIVE_HEARTBEAT_INTERVAL, 60 * 1000),
+        heartBeatInterval: fileConfig['heartBeatInterval'] || toNumber(process.env.SECURENATIVE_HEARTBEAT_INTERVAL, 60 * 5 * 1000),
         maxEvents: fileConfig['maxEvents'] || toNumber(process.env.SECURENATIVE_MAX_EVENTS, 1000),
         timeout: fileConfig['timeout'] || toNumber(process.env.SECURENATIVE_TIMEOUT, 1500),
         autoSend: fileConfig['autoSend'] || toBoolean(process.env.SECURENATIVE_AUTO_SEND, true),
