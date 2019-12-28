@@ -90,18 +90,18 @@ export default class SecureNative {
     return this.eventManager.sendSync(event, requestUrl);
   }
 
-  public async heartBeat(opts: EventOptions, req?: any): Promise<any> {
-    Logger.debug("HeartBeat", opts);
+  public async heartBeat() {
+    Logger.debug("HeartBeat");
     const requestUrl = `${this.options.apiUrl}/agent-heart-beat`;
     const event = createEvent(EventKinds.HEARTBEAT, this.options.appName);
-    try {
-      const result = await this.eventManager.sendSync(event, requestUrl);
-      Logger.debug("Successfuly performed heart beat", result);
-      return result;
-    } catch (ex) {
-      Logger.debug("Failed to perform heart beat", ex);
-      return null;
-    }
+    this.eventManager.sendAsync(event, requestUrl, false);
+  }
+
+  public async error(err: Error) {
+    Logger.debug("Error", err);
+    const requestUrl = `${this.options.apiUrl}/agent-error`;
+    const event = createEvent(EventKinds.ERROR, err);
+    this.eventManager.sendAsync(event, requestUrl);
   }
 
   private async agentLogin(): Promise<string> {

@@ -15,13 +15,14 @@ export function createEvent(eventKind: EventKinds, ...params: any[]): IEvent {
   } else if (eventKind === EventKinds.AGENT_LOGOUT) {
     return new AgentLogoutEvent();
   } else if (eventKind === EventKinds.HEARTBEAT) {
-    const [appName, hostId, hostname, agentVersion, runtime] = params;
+    const [appName] = params;
     return new AgentHeartBeatEvent(appName);
   } else if (eventKind === EventKinds.SDK) {
     const [req, eventOptions, snOptions] = params;
     return new SDKEvent(req, eventOptions, snOptions);
   } else if (eventKind === EventKinds.ERROR) {
-    return new ErrorEvent();
+    const [err] = params;
+    return new ErrorEvent(err);
   } else if (eventKind === EventKinds.PERFORMANCE) {
     return new PerformanceEvent();
   } else if (eventKind === EventKinds.REQUEST) {

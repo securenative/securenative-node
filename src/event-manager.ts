@@ -50,7 +50,7 @@ export default class EventManager {
     }
   }
 
-  public sendAsync(event: IEvent, requestUrl: string) {
+  public sendAsync(event: IEvent, requestUrl: string, retry: boolean = true) {
     if (this.events.length >= this.options.maxEvents) {
       this.events.shift();
     }
@@ -61,7 +61,8 @@ export default class EventManager {
 
     this.events.push({
       url: requestUrl,
-      options: eventOptions
+      options: eventOptions,
+      retry: retry,
     });
     Logger.debug("Added event to persist queue", eventOptions.body);
   }
@@ -72,12 +73,14 @@ export default class EventManager {
       await promiseTimeout(fetch(fetchEvent.url, fetchEvent.options), this.options.timeout).then(() => {
         Logger.debug("Event successfully sent", fetchEvent);
       }).catch((err) => {
-        Logger.debug("Failed to send event", err);
-        this.events.unshift(fetchEvent);
-        const backOff = Math.ceil(Math.random() * 10) * 1000;
-        Logger.debug("BackOff automatic sending by", backOff);
-        this.sendEnabled = false;
-        setTimeout(() => this.sendEnabled = true, backOff);
+        if (fetchEvent.retry) {
+          Logger.debug("Failed to send event", err);
+          this.events.unshift(fetchEvent);
+          const backOff = Math.ceil(Math.random() * 10) * 1000;
+          Logger.debug("BackOff automatic sending by", backOff);
+          this.sendEnabled = false;
+          setTimeout(() => this.sendEnabled = true, backOff);
+        }
       });
     }
   }

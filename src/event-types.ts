@@ -2,6 +2,7 @@ enum EventTypes {
   AGENT_LOG_IN = "sn.agent.login",
   AGENT_LOG_OUT = "sn.agent.logout",
   HEART_BEAT = "sn.agent.heartbeat",
+  ERROR = "sn.agent.error",
   LOG_IN = "sn.user.login",
   LOG_IN_CHALLENGE = "sn.user.login.challenge",
   LOG_IN_FAILURE = "sn.user.login.failure",
