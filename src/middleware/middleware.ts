@@ -1,11 +1,17 @@
 import { createHmac, timingSafeEqual } from 'crypto';
-import { cookieIdFromRequest, clientIpFromRequest, userAgentFromRequest } from '../utils/utils';
+import {
+  cookieIdFromRequest, clientIpFromRequest, remoteIpFromRequest,
+  userAgentFromRequest, headersFromRequest
+} from '../utils/utils';
 import { decrypt } from '../utils/utils';
 import EventTypes from './../event-types';
 import ActionType from "./../action-type";
 import RiskResult from './../risk-result';
 import { Logger } from './../logger';
-import SecureNative from '../securenative';
+import SecureNative from './../securenative';
+import { KeyValuePair } from './../key-value-pair';
+import { RequestOptions } from './../request-options';
+import { v4 } from 'uuid';
 
 const SIGNATURE_KEY = 'x-securenative';
 
@@ -32,25 +38,29 @@ export abstract class Middleware {
     return true;
   }
 
-  async executeRisk(req, secureNative): Promise<RiskResult> {
+  async executeRisk(req): Promise<RiskResult> {
+    const { url, method, body } = req;
     const cookie = cookieIdFromRequest(req, {});
-    let resp: RiskResult = null;
+    const cookieDecoded = decrypt(cookie, this.secureNative.apiKey);
+    const clientFP = JSON.parse(cookieDecoded) || {};
 
-    if (!cookie) {
-      Logger.debug("Cookie not found");
-      resp = await secureNative.risk({
-        eventType: EventTypes.RISK,
-        ip: clientIpFromRequest(req),
-        userAgent: userAgentFromRequest(req)
-      }, req);
-    } else {
-      const cookieDecoded = decrypt(cookie, secureNative.apiKey);
-      resp = JSON.parse(cookieDecoded) || {};
-      Logger.debug("Cookie found", resp);
-    }
+    const resp = await this.secureNative.risk({
+      url,
+      method,
+      userAgent: userAgentFromRequest(req),
+      headers: headersFromRequest(req),
+      body,
+      ip: clientIpFromRequest(req),
+      remoteIp: remoteIpFromRequest(req),
+      fp: clientFP.fp || '',
+      cid: clientFP.cid || '',
+      vid: v4()
+    });
 
+    Logger.debug("Risk", resp);
     return resp;
   }
+
 
   processResponse(res) {
     this.setSecurityHeaders(res);

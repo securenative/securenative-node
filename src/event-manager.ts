@@ -37,15 +37,16 @@ export default class EventManager {
       body: JSON.stringify(event)
     });
 
+    const resp = await fetch(requestUrl, eventOptions);
     try {
-      const resp = await fetch(requestUrl, eventOptions);
-      Logger.debug("Successfuly sent event", eventOptions);
+      const body = await resp.json();
       if (resp.status >= 200 && resp.status < 300) {
-        return await resp.json();
+        Logger.debug("Successfuly sent event", eventOptions);
+        return body;
       }
-      return Promise.reject();
+      return Promise.reject({ status: resp.status, err: body });
     } catch (ex) {
-      Logger.debug("Failed to sent event", eventOptions);
+      Logger.debug("Failed to sent event", resp.status, ex);
       return Promise.reject(ex);
     }
   }

@@ -18,7 +18,6 @@
     "build": "tsc",
     "debug-inspector": "node-debug index.ts --debug-brk",
     "test": "NODE_ENV=test mocha -r ts-node/register src/action-set.spec.ts",
-    "coverage": "istanbul cover _mocha $(find ./src -name \"*.spec.ts\" -not -path \"./node_modules/*\")",
     "publish": "npm publish --access public"
   },
   "dependencies": {
@@ -46,7 +45,6 @@
     "@types/uuid": "^3.4.4",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "istanbul": "^0.4.5",
     "mocha": "^6.1.4",
     "sinon": "^7.3.2",
     "ts-node": "^8.1.1",

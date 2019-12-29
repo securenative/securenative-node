@@ -27,7 +27,7 @@ export default class KoaMiddleware extends Middleware implements IMiddleware {
   async verifyRequest(ctx: Context, next: Function) {
     // apply security headers
     super.processResponse(ctx.res);
-    const resp = await super.executeRisk(ctx.req, this.secureNative);
+    const resp = await super.executeRisk(ctx.req);
 
     switch (resp.action) {
       case ActionType.ALLOW:

@@ -15,6 +15,7 @@ import ActionType from './action-type';
 import { Logger } from './logger';
 import { SecurityHeaders } from './security-headers';
 import HeartBeatManager from './heartbeat-manager';
+import { RequestOptions } from './request-options';
 const MAX_CUSTOM_PARAMS = 6;
 
 export default class SecureNative {
@@ -64,11 +65,12 @@ export default class SecureNative {
     }
   }
 
-  public async risk(opts: EventOptions, req?: any): Promise<RiskResult> {
+  public async risk(opts: RequestOptions): Promise<RiskResult> {
     Logger.debug("Risk call", opts);
     const requestUrl = `${this.options.apiUrl}/risk`;
-    const event = createEvent(EventKinds.SDK, req, opts, this.options);
+    const event = createEvent(EventKinds.REQUEST, opts);
     try {
+      Logger.debug("Risk event", JSON.stringify(event));
       const result = await this.eventManager.sendSync(event, requestUrl);
       const data = decrypt(result.data, this.apiKey);
       Logger.debug("Successfuly performed risk", data);

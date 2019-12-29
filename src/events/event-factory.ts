@@ -26,6 +26,7 @@ export function createEvent(eventKind: EventKinds, ...params: any[]): IEvent {
   } else if (eventKind === EventKinds.PERFORMANCE) {
     return new PerformanceEvent();
   } else if (eventKind === EventKinds.REQUEST) {
-    return new RequestEvent();
+    const [reqOptions] = params;
+    return new RequestEvent(reqOptions);
   }
 } 

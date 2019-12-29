@@ -2,6 +2,7 @@ import { parse } from 'cookie';
 import { isV4Format, isV6Format, isPublic, isLoopback, isEqual } from 'ip';
 import { createDecipheriv, randomBytes, createCipheriv } from 'crypto';
 import { createHash } from 'crypto';
+import { KeyValuePair } from '../key-value-pair';
 
 const ALGORITHM = 'aes-256-cbc';
 const BLOCK_SIZE = 16;
@@ -66,6 +67,12 @@ const userAgentFromRequest = (req: any) => {
   }
   return req.headers['user-agent'];
 }
+
+const headersFromRequest = (req: any): Array<KeyValuePair> => Object.entries(req.headers).map(([key, val]) => {
+  const value = (Array.isArray(val)) ? val.join(",") : val.toString()
+  return { key, value: encodeURI(value) }
+});
+
 
 const cookieIdFromRequest = (req: any, options) => {
   if (!req) {
@@ -176,6 +183,7 @@ export {
   clientIpFromRequest,
   remoteIpFromRequest,
   userAgentFromRequest,
+  headersFromRequest,
   cookieIdFromRequest,
   secureheaderFromRequest,
   promiseTimeout,

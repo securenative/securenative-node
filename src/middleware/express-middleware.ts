@@ -3,6 +3,8 @@ import SecureNative from './../securenative';
 import { Middleware, IMiddleware } from './middleware';
 import ActionType from '../action-type';
 import { Logger } from './../logger';
+import { RequestOptions } from './../request-options';
+import { KeyValuePair } from './../key-value-pair';
 
 export default class ExpressMiddleware extends Middleware implements IMiddleware {
   private _routes: Array<string> = [];
@@ -38,7 +40,7 @@ export default class ExpressMiddleware extends Middleware implements IMiddleware
 
     if (this._routes.includes(req.path)) {
       Logger.debug('Intercepting request');
-      const resp = await super.executeRisk(req, this.secureNative);
+      const resp = await super.executeRisk(req);
 
       switch (resp.action) {
         case ActionType.ALLOW:
