@@ -1,11 +1,11 @@
 import { join } from "path";
-import Interceptor from './interceptor';
+import { IInterceptor } from './interceptor';
 import ModuleManager from '../module-manager';
 import InterceptModules from './intercept-modules';
 import { isModuleExists } from './../utils/utils';
 import { Logger } from './../logger';
 
-export default class KoaInterceptor implements Interceptor {
+export default class KoaInterceptor implements IInterceptor {
   private name = 'koa';
   private modulePath = join(process.cwd(), InterceptModules.Koa);
   constructor(private moduleManger: ModuleManager) { }

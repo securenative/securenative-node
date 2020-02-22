@@ -1,11 +1,11 @@
 import { join } from "path";
-import Interceptor from './interceptor';
+import { IInterceptor } from './interceptor';
 import ModuleManager from '../module-manager';
 import InterceptModules from './intercept-modules';
 import { isModuleExists } from './../utils/utils';
 import { Logger } from './../logger';
 
-export default class HapiInterceptor implements Interceptor {
+export default class HapiInterceptor implements IInterceptor {
   private name = 'hapi';
   private modulePath = join(process.cwd(), InterceptModules.Hapi);
   constructor(private moduleManger: ModuleManager) { }

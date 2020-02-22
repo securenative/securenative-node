@@ -17,6 +17,7 @@ import { SecurityHeaders } from './security-headers';
 import HeartBeatManager from './heartbeat-manager';
 import { RequestOptions } from './request-options';
 import { AgentLoginOptions } from './agent-login-options';
+import RulesManager from './rules/rule-manager';
 const MAX_CUSTOM_PARAMS = 6;
 
 export default class SecureNative {
@@ -123,13 +124,19 @@ export default class SecureNative {
 
     const event = createEvent(EventKinds.AGENT_LOGIN, framework, frameworkVersion, this.options.appName);
     try {
-      const data: AgentLoginOptions = await this.eventManager.sendSync(event, requestUrl);
-      console.error(JSON.stringify(data));
-      Logger.debug(`Agent successfuly logged-in, sessionId: ${data.sessionId}`);
+      const res: AgentLoginOptions = await this.eventManager.sendSync(event, requestUrl);
+      console.error(JSON.stringify(res));
+      Logger.debug(`Agent successfuly logged-in, sessionId: ${res.sessionId}`);
+
+      // enforce all rules
+      if (res.rules) {
+        RulesManager.enforceRules(res.rules);
+      }
+
       //start hgeart beats    
       this.heartBeatManager = new HeartBeatManager(this.options.heartBeatInterval, this.heartBeat.bind(this));
       this.heartBeatManager.startHeartBeatLoop();
-      return data;
+      return res;
     } catch (ex) {
       Logger.debug("Failed to perform agent login", ex);
     }
