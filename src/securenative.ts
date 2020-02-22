@@ -16,6 +16,7 @@ import { Logger } from './logger';
 import { SecurityHeaders } from './security-headers';
 import HeartBeatManager from './heartbeat-manager';
 import { RequestOptions } from './request-options';
+import { AgentLoginOptions } from './agent-login-options';
 const MAX_CUSTOM_PARAMS = 6;
 
 export default class SecureNative {
@@ -99,6 +100,13 @@ export default class SecureNative {
     this.eventManager.sendAsync(event, requestUrl, false);
   }
 
+  public async configurationUpdate() {
+    Logger.debug("ConfigurationUpdate");
+    const requestUrl = `${this.options.apiUrl}/agent-config-update"`;
+    const event = createEvent(EventKinds.HEARTBEAT, this.options.appName);
+    this.eventManager.sendAsync(event, requestUrl, false);
+  }
+
   public async error(err: Error) {
     Logger.debug("Error", err);
     const requestUrl = `${this.options.apiUrl}/agent-error`;
@@ -106,7 +114,7 @@ export default class SecureNative {
     this.eventManager.sendAsync(event, requestUrl);
   }
 
-  private async agentLogin(): Promise<string> {
+  private async agentLogin(): Promise<AgentLoginOptions> {
     Logger.debug("Performing agent login");
     const requestUrl = `${this.options.apiUrl}/agent-login`;
 
@@ -115,12 +123,13 @@ export default class SecureNative {
 
     const event = createEvent(EventKinds.AGENT_LOGIN, framework, frameworkVersion, this.options.appName);
     try {
-      const { sessionId } = await this.eventManager.sendSync(event, requestUrl);
-      Logger.debug(`Agent successfuly logged-in, sessionId: ${sessionId}`);
+      const data: AgentLoginOptions = await this.eventManager.sendSync(event, requestUrl);
+      console.error(JSON.stringify(data));
+      Logger.debug(`Agent successfuly logged-in, sessionId: ${data.sessionId}`);
       //start hgeart beats    
       this.heartBeatManager = new HeartBeatManager(this.options.heartBeatInterval, this.heartBeat.bind(this));
       this.heartBeatManager.startHeartBeatLoop();
-      return sessionId;
+      return data;
     } catch (ex) {
       Logger.debug("Failed to perform agent login", ex);
     }
@@ -167,9 +176,9 @@ export default class SecureNative {
         InterceptorManager.applyInterceptors(this.moduleManager, this.middleware.verifyRequest, this.middleware.errorHandler);
 
         // obtain session
-        const sessionId = await this.agentLogin();
-        if (sessionId) {
-          this.eventManager.setSessionId(sessionId);
+        const data = await this.agentLogin();
+        if (data.sessionId) {
+          this.eventManager.setSessionId(data.sessionId);
           this.eventManager.startEventsPersist();
           this.isAgentStarted = true;
 
