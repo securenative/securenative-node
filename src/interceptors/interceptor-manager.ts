@@ -9,11 +9,11 @@ import HttpsServerInterceptor from './https-server-interceptor';
 export default class InterceptorManager {
   private static getAllInterceptors(moduleManager: ModuleManager): Array<IInterceptor> {
     return [
+      new HttpServerInterceptor(moduleManager),
+      //new HttpsServerInterceptor(moduleManager),
       new ExpressInterceptor(moduleManager),
       new KoaInterceptor(moduleManager),
-      new HapiInterceptor(moduleManager),
-      new HttpServerInterceptor(moduleManager),
-      new HttpsServerInterceptor(moduleManager)
+      new HapiInterceptor(moduleManager)
     ];
   }
 

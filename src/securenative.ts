@@ -18,6 +18,8 @@ import HeartBeatManager from './heartbeat-manager';
 import { RequestOptions } from './request-options';
 import { AgentLoginOptions } from './agent-login-options';
 import RulesManager from './rules/rule-manager';
+import ActionManager from './actions/action-manager';
+
 const MAX_CUSTOM_PARAMS = 6;
 
 export default class SecureNative {
@@ -131,6 +133,11 @@ export default class SecureNative {
       // enforce all rules
       if (res.rules) {
         RulesManager.enforceRules(res.rules);
+      }
+
+      // enforce all actions
+      if (res.actions) {
+        ActionManager.enforceActions(res.actions);
       }
 
       //start hgeart beats    

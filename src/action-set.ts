@@ -71,6 +71,3 @@ export class ActionSet {
     }
   }
 }
-
-//const whitelist = new ActionSet("Whitelist");
-//const blacklist = new ActionSet("Blacklist");

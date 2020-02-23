@@ -17,7 +17,7 @@ export default class RulesManager {
       const { data, interception } = rule;
       const { module, method, processor } = interception;
 
-      const [func, listner] = method.split(":");
+      const [func, listner = ''] = method.split(":");
 
       RulesManager.registerRule({
         data,

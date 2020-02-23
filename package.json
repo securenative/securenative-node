@@ -27,6 +27,7 @@
     "node-fetch": "^2.6.0",
     "pino": "^5.13.2",
     "pino-pretty": "^3.2.1",
+    "require-in-the-middle": "^5.0.3",
     "shimmer": "^1.2.1",
     "uuid": "^3.3.2"
   },
