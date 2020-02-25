@@ -4,13 +4,13 @@ import {
   userAgentFromRequest, headersFromRequest
 } from '../utils/utils';
 import { decrypt } from '../utils/utils';
-import EventTypes from './../event-types';
-import ActionType from "./../action-type";
-import RiskResult from './../risk-result';
+import EventType from '../enums/event-type';
+import ActionType from "../enums/action-type";
+import RiskResult from '../types/risk-result';
 import { Logger } from './../logger';
 import SecureNative from './../securenative';
-import { KeyValuePair } from './../key-value-pair';
-import { RequestOptions } from './../request-options';
+import { KeyValuePair } from '../types/key-value-pair';
+import { RequestOptions } from '../types/request-options';
 import { v4 } from 'uuid';
 
 const SIGNATURE_KEY = 'x-securenative';
@@ -59,20 +59,5 @@ export abstract class Middleware {
 
     Logger.debug("Risk", resp);
     return resp;
-  }
-
-
-  processResponse(res) {
-    this.setSecurityHeaders(res);
-  }
-
-  private setSecurityHeaders(res) {
-    Object.values(this.secureNative.securityHeaders).filter(h => h.enabled).forEach((securityHeader) => {
-      if (securityHeader.action) {
-        res.setHeader(securityHeader.header, securityHeader.value);
-      } else {
-        res.removeHeader(securityHeader.header);
-      }
-    });
   }
 }

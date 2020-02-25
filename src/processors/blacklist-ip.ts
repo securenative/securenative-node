@@ -1,6 +1,6 @@
 import { blackList } from './../actions-list';
-import { SetType } from '../action-set';
 import Action from '../actions/action';
+import SetType from '../enums/set-type';
 
 export default class BlacklistIp {
   constructor(private action: Action) { }

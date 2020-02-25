@@ -1,4 +1,4 @@
-export interface KeyValuePair {
+export type KeyValuePair = {
   key: string;
   value: string;
 }

@@ -1,25 +1,30 @@
 import { IInterceptor, Interceptor } from './interceptor';
 import ModuleManager from '../module-manager';
-import InterceptModules from './intercept-modules';
+import InterceptionModule from '../enums/interception-module';
 import SessionManager from './../session-manager';
 import { wrapListener } from '../utils/shimer';
 import { Logger } from '../logger';
 import Hook from 'require-in-the-middle';
 import { wrap } from 'shimmer';
+import { whitelist, blackList } from './../actions-list';
+import { clientIpFromRequest } from './../utils/utils';
+import { SecureNativeOptions } from '../types/securenative-options';
+import { getDeviceFp } from './../utils/utils';
+import SetType from '../enums/set-type';
 
 export default class HttpServerInterceptor extends Interceptor implements IInterceptor {
   private name = 'http-server';
 
-  constructor(private moduleManger: ModuleManager) {
+  constructor(private moduleManger: ModuleManager, private options: SecureNativeOptions) {
     super();
   }
 
   getModule() {
-    return InterceptModules.Http;
+    return InterceptionModule.Http;
   }
 
   canExecute(): boolean {
-    Logger.debug(`Checking ${InterceptModules.Http} module , found: ${true}`);
+    Logger.debug(`Checking ${InterceptionModule.Http} module , found: ${true}`);
     return true;
   }
 
@@ -28,18 +33,30 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
       Logger.debug(`Creating ${this.name} interceptor`);
       const module = this.getModule();
 
-      console.log('BEFORE HOOKING');
-
       Hook([module], (exports, name, basedir) => {
-
-
         wrapListener(exports.Server.prototype, 'emit', 'request', (event, req, res) => {
           SessionManager.setSession({ req, res });
-          //super.intercept('emit', 'request');
+          
+          const url = req.url;
+          const clientIp = clientIpFromRequest(req);
+          const deviceFP = getDeviceFp(req, this.options);
+
+          if (whitelist.has(SetType.IP, clientIp) || whitelist.has(SetType.USER, deviceFP) || whitelist.has(SetType.PATH, url)) {
+            req.sn_whitelisted = true;
+          } else if (blackList.has(SetType.IP, clientIp) || blackList.has(SetType.USER, deviceFP)) {
+            req.sn_finished = true;
+            super.intercept('blockRequest', '');
+            return false;
+          }
+
+          return true;
         });
 
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'setHeader', function (original) {
           return function () {
+            if (this.sn_finished) {
+              return;
+            }
             return original.apply(this, arguments);
           };
         });
@@ -47,6 +64,9 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
 
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'writeHead', function (original) {
           return function () {
+            if (this.sn_finished) {
+              return;
+            }
             return original.apply(this, arguments);
           };
         });
@@ -54,6 +74,9 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'write', (original) => {
           const intercept = super.intercept.bind(this, 'write', '');
           return function () {
+            if (this.sn_finished) {
+              return;
+            }
             intercept();
             return original.apply(this, arguments);
           };
@@ -61,6 +84,9 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
 
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'end', function (original) {
           return function () {
+            if (this.sn_finished) {
+              return;
+            }
             return original.apply(this, arguments);
           }
         });

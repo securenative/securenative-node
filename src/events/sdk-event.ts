@@ -1,11 +1,11 @@
 import IEvent from "./event";
-import { KeyValuePair } from "../key-value-pair";
-import { EventOptions } from "../event-options";
+import { KeyValuePair } from "../types/key-value-pair";
+import { EventOptions } from "../types/event-options";
 import { cookieIdFromRequest, secureheaderFromRequest, decrypt, clientIpFromRequest, remoteIpFromRequest, userAgentFromRequest } from "../utils/utils";
 import { Logger } from "../logger";
 import { v4 } from "uuid";
-import EventTypes from "../event-types";
-import { SecureNativeOptions } from "../securenative-options";
+import EventType from "../enums/event-type";
+import { SecureNativeOptions } from "../types/securenative-options";
 
 export default class SDKEvent implements IEvent {
   public eventType: string;
@@ -30,7 +30,7 @@ export default class SDKEvent implements IEvent {
     Logger.debug("Cookie decoded", cookieDecoded);
     const clientFP = JSON.parse(cookieDecoded) || {};
     Logger.debug("Extracted user FP:", clientFP);
-    this.eventType = opts.eventType || EventTypes.LOG_IN;
+    this.eventType = opts.eventType || EventType.LOG_IN;
     this.cid = clientFP.cid || '';
     this.vid = v4();
     this.fp = clientFP.fp || '';

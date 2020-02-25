@@ -1,7 +1,7 @@
 import pino from 'pino';
 
 
-import { SecureNativeOptions } from './securenative-options';
+import { SecureNativeOptions } from './types/securenative-options';
 
 const defaultSettings: pino.LoggerOptions = {
   level: 'debug',

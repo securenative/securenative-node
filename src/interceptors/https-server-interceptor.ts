@@ -1,6 +1,6 @@
 import { IInterceptor, Interceptor } from './interceptor';
 import ModuleManager from '../module-manager';
-import InterceptModules from './intercept-modules';
+import InterceptionModule from '../enums/interception-module';
 import SessionManager from './../session-manager';
 import { wrapListener } from '../utils/shimer';
 import { Logger } from '../logger';
@@ -15,11 +15,11 @@ export default class HttpsServerInterceptor extends Interceptor implements IInte
   }
 
   getModule() {
-    return require(InterceptModules.Https);
+    return require(InterceptionModule.Https);
   }
 
   canExecute(): boolean {
-    Logger.debug(`Checking ${InterceptModules.Https} module , found: ${true}`);
+    Logger.debug(`Checking ${InterceptionModule.Https} module , found: ${true}`);
     return true;
   }
 

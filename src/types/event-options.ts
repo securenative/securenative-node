@@ -1,10 +1,10 @@
-import EventTypes from "./event-types";
+import EventType from "../enums/event-type";
 import { KeyValuePair } from "./key-value-pair";
 
 export type EventOptions = {
   ip: string;
   userAgent: string;
-  eventType?: EventTypes | string;
+  eventType?: EventType | string;
   remoteIp?: string;
   user?: {
     id: string;

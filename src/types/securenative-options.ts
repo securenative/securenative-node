@@ -1,4 +1,4 @@
-export interface SecureNativeOptions {
+export type SecureNativeOptions = {
   apiKey?: string;
   appName: string;
   apiUrl?: string;

@@ -1,6 +1,6 @@
 import ConfigurationManager from "./configuration-manager";
 import SecureNative from "./securenative";
-import EventTypes from './event-types';
+import EventType from './enums/event-type';
 import { Logger } from "./logger";
 import { compareVersions } from './utils/utils';
 import { Package, PackageManager } from "./package-manager";
@@ -44,5 +44,5 @@ if (compareVersions(process.version, config.minSupportedVersion) < 0) {
 
 export {
   secureNative,
-  EventTypes
+  EventType as EventTypes
 };

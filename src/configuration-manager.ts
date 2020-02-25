@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { SecureNativeOptions } from './securenative-options';
+import { SecureNativeOptions } from './types/securenative-options';
 import { Logger } from './logger';
 import { toNumber, toBoolean } from './utils/utils';
 

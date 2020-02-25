@@ -1,11 +1,11 @@
 import IEvent from './event';
-import EventTypes from './../event-types';
-import { KeyValuePair } from './../key-value-pair';
-import { RequestOptions } from './../request-options';
+import EventType from '../enums/event-type';
+import { KeyValuePair } from '../types/key-value-pair';
+import { RequestOptions } from '../types/request-options';
 
 export default class RequestEvent implements IEvent {
   ts: number;
-  eventType: string = EventTypes.RISK;
+  eventType: string = EventType.RISK;
   private url: string;
   private method: string;
   private userAgent: string;

@@ -1,4 +1,4 @@
-enum InterceptModules {
+enum InterceptionModule {
   Http = "http",
   Https = "https",
   Express = "/node_modules/express/lib/express.js",
@@ -6,4 +6,4 @@ enum InterceptModules {
   Hapi = "/node_modules/@hapi/hapi/lib/index.js"
 };
 
-export default InterceptModules;
+export default InterceptionModule;

@@ -2,7 +2,7 @@ import { Context } from 'koa';
 import { } from 'koa-bodyparser';
 import SecureNative from './../securenative';
 import { Middleware, IMiddleware } from './middleware';
-import ActionType from '../action-type';
+import ActionType from '../enums/action-type';
 import { readFile } from 'fs';
 
 export default class KoaMiddleware extends Middleware implements IMiddleware {
@@ -25,8 +25,6 @@ export default class KoaMiddleware extends Middleware implements IMiddleware {
   }
 
   async verifyRequest(ctx: Context, next: Function) {
-    // apply security headers
-    super.processResponse(ctx.res);
     const resp = await super.executeRisk(ctx.req);
 
     switch (resp.action) {

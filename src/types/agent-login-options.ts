@@ -1,5 +1,5 @@
-import Rule from "./rules/rule";
-import Action from "./actions/action";
+import Rule from "../rules/rule";
+import Action from "../actions/action";
 
 export type AgentLoginOptions = {
   sessionId: string;

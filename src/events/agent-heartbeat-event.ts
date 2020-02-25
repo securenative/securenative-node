@@ -1,4 +1,4 @@
-import EventTypes from '../event-types';
+import EventType from '../enums/event-type';
 import IEvent from './event';
 import { getHostIdSync } from '../utils/host-utils';
 import { hostname } from 'os';
@@ -8,7 +8,7 @@ import { join } from 'path';
 const PACKAGE_FILE_NAME = 'package.json';
 
 export default class AgentHeartBeatEvent implements IEvent {
-  public eventType = EventTypes.HEART_BEAT;
+  public eventType = EventType.HEART_BEAT;
   public ts: number;
   private hostId: string;
   private hostname: string;

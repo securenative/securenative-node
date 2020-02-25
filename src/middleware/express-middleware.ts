@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import SecureNative from './../securenative';
 import { Middleware, IMiddleware } from './middleware';
-import ActionType from '../action-type';
+import ActionType from '../enums/action-type';
 import { Logger } from './../logger';
-import { RequestOptions } from './../request-options';
-import { KeyValuePair } from './../key-value-pair';
+import { RequestOptions } from '../types/request-options';
+import { KeyValuePair } from '../types/key-value-pair';
 
 export default class ExpressMiddleware extends Middleware implements IMiddleware {
   private _routes: Array<string> = [];
@@ -27,9 +27,6 @@ export default class ExpressMiddleware extends Middleware implements IMiddleware
   }
 
   async verifyRequest(req: Request, res: Response, next: NextFunction) {
-    // apply security headers
-    super.processResponse(res);
-
     if (this._routes.length == 0) {
       req.app._router.stack.forEach(middleware => {
         if (middleware.route) {

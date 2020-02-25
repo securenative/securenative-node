@@ -2,7 +2,8 @@ import { parse } from 'cookie';
 import { isV4Format, isV6Format, isPublic, isLoopback, isEqual } from 'ip';
 import { createDecipheriv, randomBytes, createCipheriv } from 'crypto';
 import { createHash } from 'crypto';
-import { KeyValuePair } from '../key-value-pair';
+import { KeyValuePair } from '../types/key-value-pair';
+import { Logger } from '../logger';
 
 const ALGORITHM = 'aes-256-cbc';
 const BLOCK_SIZE = 16;
@@ -90,6 +91,13 @@ const secureheaderFromRequest = (req: any) => {
   }
   const secHeader = req.headers['x-securenative'] || '';
   return secHeader.toString() || null;
+}
+
+const getDeviceFp = (req, options) => {
+  const cookie = cookieIdFromRequest(req, options) || secureheaderFromRequest(req) || '{}';
+  const cookieDecoded = decrypt(cookie, options.apiKey);
+  const clientFP = JSON.parse(cookieDecoded) || {};
+  return clientFP.fp || '';
 }
 
 const promiseTimeout = (promise, ms) => {
@@ -186,6 +194,7 @@ export {
   headersFromRequest,
   cookieIdFromRequest,
   secureheaderFromRequest,
+  getDeviceFp,
   promiseTimeout,
   compareVersions,
   encrypt,

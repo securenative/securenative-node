@@ -1,11 +1,11 @@
 import { v4 } from 'uuid';
 import fetch from 'node-fetch';
-import { EventOptions } from './event-options';
-import EventTypes from './event-types';
+import { EventOptions } from './types/event-options';
+import EventType from './enums/event-type';
 import IEvent from './events/event';
 import { cookieIdFromRequest, secureheaderFromRequest, clientIpFromRequest, remoteIpFromRequest, userAgentFromRequest } from './utils/utils';
-import { SecureNativeOptions } from './securenative-options';
-import { FetchOptions } from './fetch-options';
+import { SecureNativeOptions } from './types/securenative-options';
+import { FetchOptions } from './types/fetch-options';
 import { promiseTimeout, decrypt } from './utils/utils';
 import { Logger } from './logger';
 

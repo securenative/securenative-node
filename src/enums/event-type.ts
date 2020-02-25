@@ -1,6 +1,7 @@
-enum EventTypes {
+enum EventType {
   AGENT_LOG_IN = "sn.agent.login",
   AGENT_LOG_OUT = "sn.agent.logout",
+  AGENT_CONFIG = "sn.agent.config",
   HEART_BEAT = "sn.agent.heartbeat",
   ERROR = "sn.agent.error",
   LOG_IN = "sn.user.login",
@@ -25,4 +26,4 @@ enum EventTypes {
   RISK = "sn.risk"
 };
 
-export default EventTypes;
+export default EventType;

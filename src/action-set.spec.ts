@@ -1,6 +1,7 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { ActionSet, SetType } from './action-set';
+import { ActionSet } from './action-set';
+import SetType from './enums/set-type';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

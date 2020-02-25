@@ -1,21 +1,18 @@
 import { IPSet } from 'futoin-ipset';
-
-export enum SetType {
-  IP = "ip",
-  USER = "user",
-  COUNTRY = "country"
-}
+import SetType from './enums/set-type';
 
 export class ActionSet {
   private multiSet = {
     ip: new IPSet(),
+    path: new Map<string, NodeJS.Timeout>(),
     user: new Map<string, NodeJS.Timeout>(),
     country: new Map<string, NodeJS.Timeout>()
   };
+
   constructor(private name: string) { }
 
-  public add(setType: SetType, item: string, timeout?: number) {
-    const intervalId = (timeout) ? setTimeout(() => this.delete(setType, item), timeout) : null;
+  public add(setType: SetType, item: string, ts?: number, ttl?: number) {
+    const intervalId = (ts) ? setTimeout(() => this.delete(setType, item), ttl * 1000 - (new Date().getTime() - ts)) : null;
     const set = this.getSet(setType);
 
     if (setType === SetType.IP) {
