@@ -1,8 +1,6 @@
-import Rule from "../rules/rule";
-import Action from "../actions/action";
+import { AgentConfigOptions } from "./agent-config-options";
 
 export type AgentLoginOptions = {
   sessionId: string;
-  rules: Array<Rule>;
-  actions: Array<Action>;
+  config: AgentConfigOptions;
 };

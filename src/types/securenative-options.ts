@@ -1,6 +1,7 @@
 export type SecureNativeOptions = {
   apiKey?: string;
-  appName: string;
+  appName?: string;
+  hostId?: string;
   apiUrl?: string;
   interval?: number;
   heartBeatInterval?: number;

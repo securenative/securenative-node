@@ -32,21 +32,23 @@ export default class EventManager {
     this.defaultFetchOptions.options.headers['SN-Agent-Session'] = sessionId;
   }
 
-  public async sendSync(event: IEvent, requestUrl: string): Promise<any> {
+  public async sendSync<T>(event: IEvent, requestUrl: string, timeout: number = this.defaultFetchOptions.options.timeout): Promise<T> {
     const eventOptions = Object.assign({}, this.defaultFetchOptions.options, {
       body: JSON.stringify(event)
-    });
+    }, { timeout });
 
     const resp = await fetch(requestUrl, eventOptions);
     try {
-      const body = await resp.json();
       if (resp.status >= 200 && resp.status < 300) {
+        const body = await resp.json();
         Logger.debug("Successfuly sent event", eventOptions);
         return body;
       }
-      return Promise.reject({ status: resp.status, err: body });
+
+      const text = await resp.text();
+      return Promise.reject({ status: resp.status, err: text });
     } catch (ex) {
-      Logger.debug("Failed to sent event", resp.status, ex);
+      Logger.debug("Failed to send event", resp.status, ex);
       return Promise.reject(ex);
     }
   }

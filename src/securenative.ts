@@ -19,10 +19,12 @@ import { AgentLoginOptions } from './types/agent-login-options';
 import RulesManager from './rules/rule-manager';
 import ActionManager from './actions/action-manager';
 import ApiRoute from './enums/api-route';
+import { AgentConfigOptions } from './types/agent-config-options';
 
 const MAX_CUSTOM_PARAMS = 6;
 
 export default class SecureNative {
+  private configUpdateTs = 0;
   private isAgentStarted: boolean = false;
   private eventManager: EventManager;
   private heartBeatManager: HeartBeatManager;
@@ -55,7 +57,7 @@ export default class SecureNative {
     const event = createEvent(EventKind.SDK, req, opts, this.options);
 
     try {
-      const result = await this.eventManager.sendSync(event, requestUrl);
+      const result = await this.eventManager.sendSync<VerifyResult>(event, requestUrl);
       Logger.debug("Successfuly called virify", result);
       return result;
     } catch (ex) {
@@ -74,7 +76,7 @@ export default class SecureNative {
     const event = createEvent(EventKind.REQUEST, opts);
     try {
       Logger.debug("Risk event", JSON.stringify(event));
-      const result = await this.eventManager.sendSync(event, requestUrl);
+      const result = await this.eventManager.sendSync<any>(event, requestUrl);
       const data = decrypt(result.data, this.apiKey);
       Logger.debug("Successfuly performed risk", data);
       return JSON.parse(data);
@@ -95,12 +97,40 @@ export default class SecureNative {
     this.eventManager.sendAsync(event, requestUrl, false);
   }
 
-  public async configurationUpdate() {
+  public configurationUpdate() {
     Logger.debug("ConfigurationUpdate");
-    const requestUrl = `${this.options.apiUrl}/${ApiRoute.Config}"`;
-    const event = createEvent(EventKind.CONFIG, this.options.appName);
-    const data = await this.eventManager.sendSync(event, requestUrl);
-    
+    const requestUrl = `${this.options.apiUrl}/${ApiRoute.Config}`;
+    Logger.debug(`Requesting changes for, ${this.configUpdateTs}`);
+    const event = createEvent(EventKind.CONFIG, this.options.hostId, this.options.appName, this.configUpdateTs);
+
+    this.eventManager.sendSync<AgentConfigOptions>(event, requestUrl, 0).then((config) => {
+      this.handleConfigUpdate(config);
+    }).catch((ex) => {}).finally(() => {
+      // scheduale next call
+      process.nextTick(this.configurationUpdate.bind(this));
+    })
+  }
+
+  private handleConfigUpdate(config: AgentConfigOptions) {
+    Logger.debug('Handling config update');
+
+    if (!config) {
+      return
+    }
+
+    if (config.ts > this.configUpdateTs) {
+      this.configUpdateTs = config.ts;
+    }
+
+    // enforce all rules
+    if (config.rules) {
+      RulesManager.enforceRules(config.rules);
+    }
+
+    // enforce all actions
+    if (config.actions) {
+      ActionManager.enforceActions(config.actions);
+    }
   }
 
   public async error(err: Error) {
@@ -117,25 +147,19 @@ export default class SecureNative {
     const framework = this.moduleManager.framework;
     const frameworkVersion = this.moduleManager.pkg.dependencies[this.moduleManager.framework];
 
-    const event = createEvent(EventKind.AGENT_LOGIN, framework, frameworkVersion, this.options.appName);
+    const event = createEvent(EventKind.AGENT_LOGIN, this.options.hostId, framework, frameworkVersion, this.options.appName);
     try {
-      const res: AgentLoginOptions = await this.eventManager.sendSync(event, requestUrl);
-      console.error(JSON.stringify(res));
+      const res = await this.eventManager.sendSync<AgentLoginOptions>(event, requestUrl);
       Logger.debug(`Agent successfuly logged-in, sessionId: ${res.sessionId}`);
 
-      // enforce all rules
-      if (res.rules) {
-        RulesManager.enforceRules(res.rules);
-      }
-
-      // enforce all actions
-      if (res.actions) {
-        ActionManager.enforceActions(res.actions);
-      }
+      //update config
+      this.handleConfigUpdate(res.config);
 
       //start hgeart beats    
       this.heartBeatManager = new HeartBeatManager(this.options.heartBeatInterval, this.heartBeat.bind(this));
       this.heartBeatManager.startHeartBeatLoop();
+      this.configurationUpdate.call(this);
+
       return res;
     } catch (ex) {
       Logger.debug("Failed to perform agent login", ex);
@@ -149,7 +173,7 @@ export default class SecureNative {
     const event = createEvent(EventKind.AGENT_LOGOUT);
 
     try {
-      this.eventManager.sendSync(event, requestUrl);
+      this.eventManager.sendSync<any>(event, requestUrl);
       Logger.debug('Agent successfuly logged-out');
       this.heartBeatManager.stopHeartBeatLoop();
       return true;

@@ -12,7 +12,14 @@ export default class RulesManager {
     RulesManager.rules.push(rule);
   }
 
+  static clean = () => {
+    RulesManager.rules = [];
+  }
+
   static enforceRules = (rules: Array<Rule>) => {
+    //clean previous rules
+    RulesManager.clean();
+    
     rules.forEach((rule: Rule) => {
       const { data, interception } = rule;
       const { module, method, processor } = interception;

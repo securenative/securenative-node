@@ -6,15 +6,20 @@ import { compareVersions } from './utils/utils';
 import { Package, PackageManager } from "./package-manager";
 import { join } from "path";
 import ModuleManager from "./module-manager";
+import { getHostIdSync } from "./utils/host-utils";
 
 const PACKAGE_FILE_NAME = 'package.json';
 const appPkg: Package = PackageManager.getPackage(join(process.cwd(), PACKAGE_FILE_NAME));
 const config = ConfigurationManager.getConfig();
+const hostId = getHostIdSync();
 
 // set default app name
 if (!config.appName) {
   ConfigurationManager.setConfigKey('appName', appPkg.name);
 }
+
+ConfigurationManager.setConfigKey('hostId', hostId);
+
 const moduleManager = new ModuleManager(appPkg);
 const secureNative = new SecureNative(moduleManager, config);
 

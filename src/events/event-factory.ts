@@ -7,11 +7,12 @@ import ErrorEvent from './error-event';
 import PerformanceEvent from './performance-event';
 import RequestEvent from './request-event';
 import AgentHeartBeatEvent from './agent-heartbeat-event';
+import ConfigEvent from './config-event';
 
 export function createEvent(eventKind: EventKind, ...params: any[]): IEvent {
   if (eventKind === EventKind.AGENT_LOGIN) {
-    const [framework, frameworkVersion, appName] = params;
-    return new AgentLoginEvent(framework, frameworkVersion, appName);
+    const [hostId, framework, frameworkVersion, appName] = params;
+    return new AgentLoginEvent(hostId, framework, frameworkVersion, appName);
   } else if (eventKind === EventKind.AGENT_LOGOUT) {
     return new AgentLogoutEvent();
   } else if (eventKind === EventKind.HEARTBEAT) {
@@ -28,8 +29,8 @@ export function createEvent(eventKind: EventKind, ...params: any[]): IEvent {
   } else if (eventKind === EventKind.REQUEST) {
     const [reqOptions] = params;
     return new RequestEvent(reqOptions);
-  }else if (eventKind === EventKind.CONFIG) {
-    const [reqOptions] = params;
-    return new RequestEvent(reqOptions);
+  } else if (eventKind === EventKind.CONFIG) {
+    const [hostId, appName, ts] = params;
+    return new ConfigEvent(hostId, appName, ts);
   }
 } 
