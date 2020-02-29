@@ -45,7 +45,7 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
             req.sn_whitelisted = true;
           } else if (blackList.has(SetType.IP, clientIp) || blackList.has(SetType.USER, deviceFP)) {
             req.sn_finished = true;
-            super.intercept('blockRequest', '');
+            super.intercept('blockRequest');
             return false;
           }
 
@@ -72,7 +72,7 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
         });
 
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'write', (original) => {
-          const intercept = super.intercept.bind(this, 'write', '');
+          const intercept = super.intercept.bind(this, 'write');
           return function () {
             if (this.sn_finished) {
               return;

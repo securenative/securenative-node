@@ -8,7 +8,7 @@ export interface IInterceptor {
 }
 
 export abstract class Interceptor {
-  intercept(method: string, listener: string) {
+  intercept(method: string, listener: string = '') {
     const rules = RulesManager.getRules(method, listener);
     const session = SessionManager.getSession();
     rules.forEach((rule) => {
