@@ -190,12 +190,12 @@ export default class SecureNative {
         Logger.debug("Attempting to start agent");
         if (!this.options.apiKey) {
           console.error('You must pass your SecureNative api key!');
-          reject(false);
+          return reject(false);
         }
 
         if (this.options.disable) {
           Logger.debug("Skipping agent start");
-          resolve(false);
+          return resolve(false);
         }
 
         // create middleware

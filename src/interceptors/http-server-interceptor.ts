@@ -54,7 +54,7 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
           return true;
         });
 
-        wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'setHeader', function (original) {
+        wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'setHeader', (original) => {
           return function () {
             if (this.sn_finished) {
               return;
@@ -64,11 +64,13 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
         });
 
 
-        wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'writeHead', function (original) {
+        wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'writeHead', (original) => {
+          const intercept = super.intercept.bind(this);
           return function () {
             if (this.sn_finished) {
               return;
             }
+            intercept(this.req.sn_uid, 'write');
             return original.apply(this, arguments);
           };
         });
@@ -79,12 +81,12 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
             if (this.sn_finished) {
               return;
             }
-            intercept(this.sn_uid, 'write');
+            intercept(this.req.sn_uid, 'write');
             return original.apply(this, arguments);
           };
         });
 
-        wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'end', function (original) {
+        wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'end', (original) => {
           return function () {
             SessionManager.cleanSession(this.req.sn_uid);
             if (this.sn_finished) {
