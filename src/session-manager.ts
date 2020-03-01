@@ -6,13 +6,19 @@ export interface Session {
 }
 
 export default class SessionManager {
-  private static session: Session;
+  private static session: Map<string, Session> = new Map<string, Session>();
 
-  static getSession(): Session {
-    return SessionManager.session;
+  static getSession(id: string): Session {
+    return SessionManager.session.get(id);
   }
 
-  static setSession(session: Session) {
-    SessionManager.session = session;
+  static setSession(id: string, session: Session) {
+    session.req.sn_uid = id;
+    session.res.sn_uid = id;
+    SessionManager.session.set(id, session);
+  }
+
+  static cleanSession(id: string) {
+    SessionManager.session.delete(id);
   }
 }

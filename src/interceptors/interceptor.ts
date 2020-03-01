@@ -8,9 +8,9 @@ export interface IInterceptor {
 }
 
 export abstract class Interceptor {
-  intercept(method: string, listener: string = '') {
+  intercept(id: string, method: string, listener: string = '') {
     const rules = RulesManager.getRules(method, listener);
-    const session = SessionManager.getSession();
+    const session = SessionManager.getSession(id);
     rules.forEach((rule) => {
       rule.processor.call(this, rule, session);
     });

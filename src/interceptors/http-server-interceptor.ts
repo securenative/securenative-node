@@ -11,6 +11,7 @@ import { clientIpFromRequest } from './../utils/utils';
 import { SecureNativeOptions } from '../types/securenative-options';
 import { getDeviceFp } from './../utils/utils';
 import SetType from '../enums/set-type';
+import { v4 } from 'uuid';
 
 export default class HttpServerInterceptor extends Interceptor implements IInterceptor {
   private name = 'http-server';
@@ -35,8 +36,9 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
 
       Hook([module], (exports, name, basedir) => {
         wrapListener(exports.Server.prototype, 'emit', 'request', (event, req, res) => {
-          SessionManager.setSession({ req, res });
-          
+          const snuid = v4();
+          SessionManager.setSession(snuid, { req, res });
+
           const url = req.url;
           const clientIp = clientIpFromRequest(req);
           const deviceFP = getDeviceFp(req, this.options);
@@ -45,7 +47,7 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
             req.sn_whitelisted = true;
           } else if (blackList.has(SetType.IP, clientIp) || blackList.has(SetType.USER, deviceFP)) {
             req.sn_finished = true;
-            super.intercept('blockRequest');
+            super.intercept(snuid, 'blockRequest');
             return false;
           }
 
@@ -72,18 +74,19 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
         });
 
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'write', (original) => {
-          const intercept = super.intercept.bind(this, 'write');
+          const intercept = super.intercept.bind(this);
           return function () {
             if (this.sn_finished) {
               return;
             }
-            intercept();
+            intercept(this.sn_uid, 'write');
             return original.apply(this, arguments);
           };
         });
 
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'end', function (original) {
           return function () {
+            SessionManager.cleanSession(this.req.sn_uid);
             if (this.sn_finished) {
               return;
             }
