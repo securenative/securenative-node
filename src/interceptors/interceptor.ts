@@ -11,8 +11,10 @@ export abstract class Interceptor {
   intercept(id: string, method: string, listener: string = '') {
     const rules = RulesManager.getRules(method, listener);
     const session = SessionManager.getSession(id);
-    rules.forEach((rule) => {
-      rule.processor.call(this, rule, session);
-    });
+    if (session) {
+      rules.forEach((rule) => {
+        rule.processor.call(this, rule, session);
+      });
+    }
   }
 }
