@@ -6,7 +6,7 @@ import { wrapListener } from '../utils/shimer';
 import { Logger } from '../logger';
 import Hook from 'require-in-the-middle';
 import { wrap } from 'shimmer';
-import { whitelist, blackList } from './../actions-list';
+import ActionsList from './../actions-list';
 import { clientIpFromRequest } from './../utils/utils';
 import { SecureNativeOptions } from '../types/securenative-options';
 import { getDeviceFp } from './../utils/utils';
@@ -43,9 +43,9 @@ export default class HttpsServerInterceptor extends Interceptor implements IInte
           const clientIp = clientIpFromRequest(req);
           const deviceFP = getDeviceFp(req, this.options);
 
-          if (whitelist.has(SetType.IP, clientIp) || whitelist.has(SetType.USER, deviceFP) || whitelist.has(SetType.PATH, url)) {
+          if (ActionsList.whitelist.has(SetType.IP, clientIp) || ActionsList.whitelist.has(SetType.USER, deviceFP) || ActionsList.whitelist.has(SetType.PATH, url)) {
             req.sn_whitelisted = true;
-          } else if (blackList.has(SetType.IP, clientIp) || blackList.has(SetType.USER, deviceFP)) {
+          } else if (ActionsList.blackList.has(SetType.IP, clientIp) || ActionsList.blackList.has(SetType.USER, deviceFP)) {
             req.sn_finished = true;
             super.intercept(snuid, 'blockRequest');
             return false;

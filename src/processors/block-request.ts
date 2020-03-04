@@ -9,11 +9,17 @@ export default class BlockRequest {
     if (session.res && session.res.sn_finished) {
       return;
     }
-    if (session.res) {
+    if (session.req && session.res) {
       session.res.writeHead(403);
       session.res.write(BLOCK_PAGE);
       session.res.end();
+
+      // close req socket
+      session.req.socket.end();
+
+      //mark res finished
       session.res.sn_finished = true;
+      session.res._header = null;
     }
   }
 }

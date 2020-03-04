@@ -6,7 +6,7 @@ import { wrapListener } from '../utils/shimer';
 import { Logger } from '../logger';
 import Hook from 'require-in-the-middle';
 import { wrap } from 'shimmer';
-import { whitelist, blackList} from './../actions-list';
+import ActionsList from './../actions-list';
 import { clientIpFromRequest } from './../utils/utils';
 import { SecureNativeOptions } from '../types/securenative-options';
 import { getDeviceFp } from './../utils/utils';
@@ -43,21 +43,18 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
           const clientIp = clientIpFromRequest(req);
           const deviceFP = getDeviceFp(req, this.options);
 
-          if (whitelist.has(SetType.IP, clientIp) || whitelist.has(SetType.USER, deviceFP) || whitelist.has(SetType.PATH, url)) {
+          if (ActionsList.whitelist.has(SetType.IP, clientIp) || ActionsList.whitelist.has(SetType.USER, deviceFP) || ActionsList.whitelist.has(SetType.PATH, url)) {
             req.sn_whitelisted = true;
-          } else if (blackList.has(SetType.IP, clientIp) || blackList.has(SetType.USER, deviceFP)) {
-            req.sn_finished = true;
-            super.intercept(snuid, 'blockRequest');
-            return false;
+          } else if (ActionsList.blackList.has(SetType.IP, clientIp) || ActionsList.blackList.has(SetType.USER, deviceFP)) {
+            super.intercept(snuid, 'block');
           }
-
           return true;
         });
 
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'setHeader', (original) => {
           return function () {
-            if (this.sn_finished) {
-              return;
+            if (this && this.sn_finished) {
+              return true;
             }
             return original.apply(this, arguments);
           };
@@ -67,10 +64,10 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'writeHead', (original) => {
           const intercept = super.intercept.bind(this);
           return function () {
-            if (this.sn_finished) {
+            if (this && this.sn_finished) {
               return;
             }
-            intercept(this.req.sn_uid, 'write');
+            intercept(this.req && this.req.sn_uid, 'write');
             return original.apply(this, arguments);
           };
         });
@@ -78,18 +75,18 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'write', (original) => {
           const intercept = super.intercept.bind(this);
           return function () {
-            if (this.sn_finished) {
+            if (this && this.sn_finished) {
               return;
             }
-            intercept(this.req.sn_uid, 'write');
+            intercept(this.req && this.req.sn_uid, 'write');
             return original.apply(this, arguments);
           };
         });
 
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'end', (original) => {
           return function () {
-            SessionManager.cleanSession(this.req.sn_uid);
-            if (this.sn_finished) {
+            SessionManager.cleanSession(this.req && this.req.sn_uid);
+            if (this && this.sn_finished) {
               return;
             }
             return original.apply(this, arguments);
