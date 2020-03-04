@@ -2,7 +2,8 @@ import { processors } from './../processors';
 import Action from './action';
 
 const ActionProcessors = {
-  'block_ip': [processors.BlacklistIp]
+  'block_ip': [processors.BlacklistIp],
+  'allow_ip': [processors.WhitelistIp]
 };
 
 export default class ActionManager {

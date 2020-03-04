@@ -6,7 +6,7 @@ import { wrapListener } from '../utils/shimer';
 import { Logger } from '../logger';
 import Hook from 'require-in-the-middle';
 import { wrap } from 'shimmer';
-import { whitelist, blackList } from './../actions-list';
+import { whitelist, blackList} from './../actions-list';
 import { clientIpFromRequest } from './../utils/utils';
 import { SecureNativeOptions } from '../types/securenative-options';
 import { getDeviceFp } from './../utils/utils';
