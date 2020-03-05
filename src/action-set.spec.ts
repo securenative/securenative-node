@@ -14,6 +14,21 @@ describe('SecureNative', () => {
     expect(actionSet).to.have.property("delete");
   });
 
+  it('Should not block invalid ip', () => {
+    const ip = "da0352b6df497acd526a44ca0424f4b3";
+    const actionSet = new ActionSet("ActionTest");
+    actionSet.add(SetType.IP, ip);
+
+    expect(actionSet.has(SetType.IP, ip)).to.be.false;
+  });
+
+  it('Should not block invalid expired ip', () => {
+    const ip = "da0352b6df497acd526a44ca0424f4b3";
+    const actionSet = new ActionSet("ActionTest");
+    actionSet.add(SetType.IP, ip, 1583422845, 600);
+    expect(actionSet.has(SetType.IP, ip)).to.be.false;
+  });
+
   it('Should block ip, user, country forever', () => {
     const ip = "10.0.0.1";
     const user = "DC48C86C04DF0005FB4DE3629AB1F";

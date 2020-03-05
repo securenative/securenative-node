@@ -41,6 +41,9 @@ export class ActionSet {
     let intervalId = null;
     const set = this.getSet(setType);
     if (setType === SetType.IP) {
+      if (!this.isValidIP(set, item)) {
+        return;
+      }
       const match = set.match(item);
       if (match) {
         intervalId = match.intervalId;
