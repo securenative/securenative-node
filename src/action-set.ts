@@ -12,7 +12,7 @@ export class ActionSet {
   constructor(private name: string) { }
 
   public add(setType: SetType, item: string, ts?: number, ttl?: number) {
-    const intervalId = (ts) ? setTimeout(() => this.delete(setType, item), ttl * 1000 - (new Date().getTime() - ts)) : null;
+    const intervalId = (ts && ttl !== -1) ? setTimeout(() => this.delete(setType, item), ttl * 1000 - (new Date().getTime() - ts)) : -1;
     const set = this.getSet(setType);
 
     if (setType === SetType.IP) {
