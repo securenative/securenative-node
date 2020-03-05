@@ -3,6 +3,7 @@ import Action from './action';
 
 const ActionProcessors = {
   'block_ip': [processors.BlacklistIp],
+  'unblock_ip': [processors.DeleteBlacklistedIp],
   'allow_ip': [processors.WhitelistIp]
 };
 
