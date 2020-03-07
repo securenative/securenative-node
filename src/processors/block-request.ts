@@ -10,7 +10,7 @@ export default class BlockRequest {
       return;
     }
     if (session.req && session.res) {
-      session.res.writeHead(403);
+      session.res.writeHead(403, { 'X-SECURENATIVE': 'Block' });
       session.res.write(BLOCK_PAGE);
       session.res.end();
 
