@@ -11,11 +11,9 @@ export default class BlockRequest {
     }
     if (session.req && session.res) {
       const headers = {};
-      if (session.req.headers && session.req.headers['sec-fetch-mode'] === 'cors') {
-        headers["Access-Control-Allow-Origin"] = "*";
-        headers["Access-Control-Allow-Methods"] = "*";
-        headers["Access-Control-Allow-Headers"] = "*";
-      }
+      headers["Access-Control-Allow-Origin"] = "*";
+      headers["Access-Control-Allow-Methods"] = "*";
+      headers["Access-Control-Allow-Headers"] = "*";
       headers['content-type'] = "securenative/block";
 
       session.res.writeHead(403, headers);
