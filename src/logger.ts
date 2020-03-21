@@ -18,6 +18,7 @@ const defaultSettings: pino.LoggerOptions = {
 
 export interface ILogger {
   debug(msg: string, ...args: any[]);
+  error(msg: string, ...args: any[]);
 }
 
 export class Logger {
@@ -30,6 +31,12 @@ export class Logger {
   static debug(msg: string, ...args: any[]) {
     if (Logger.log) {
       (args.length === 0) ? Logger.log.debug(msg) : Logger.log.debug(msg, args);
+    }
+  }
+
+  static error(msg: string, ...args: any[]) {
+    if (Logger.log) {
+      (args.length === 0) ? Logger.log.error(msg) : Logger.log.error(msg, args);
     }
   }
 }

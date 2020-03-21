@@ -33,6 +33,16 @@ export default class SecureNative {
 
   constructor(public moduleManager: ModuleManager, private options: SecureNativeOptions) {
     this.eventManager = new EventManager(this.options);
+
+    if (!options.disable) {
+      // create middleware
+      this.middleware = createMiddleware(this);
+      this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware);
+      this.middleware.verifyRequest = this.middleware.verifyRequest.bind(this.middleware);
+
+      // apply interceptors
+      InterceptorManager.applyInterceptors(this.moduleManager, this.options, this.middleware.verifyRequest, this.middleware.errorHandler);
+    }
   }
 
   public get apiKey(): string {
@@ -105,7 +115,7 @@ export default class SecureNative {
 
     this.eventManager.sendSync<AgentConfigOptions>(event, requestUrl, 0).then((config) => {
       this.handleConfigUpdate(config);
-    }).catch((ex) => {}).finally(() => {
+    }).catch((ex) => { }).finally(() => {
       // scheduale next call
       process.nextTick(this.configurationUpdate.bind(this));
     })
@@ -164,7 +174,8 @@ export default class SecureNative {
     } catch (ex) {
       Logger.debug("Failed to perform agent login", ex);
     }
-    return Promise.reject(null);
+
+    return null;
   }
 
   private async agentLogout(): Promise<boolean> {
@@ -186,40 +197,41 @@ export default class SecureNative {
   public async startAgent(): Promise<boolean> {
     return this.lazyOperation = new Promise(async (resolve, reject) => {
 
+      if (this.options.disable) {
+        Logger.debug("Agent is disabled, skipping agent start");
+        return resolve(false);
+      }
+
+      if (!this.options.apiKey) {
+        console.error('You must pass your SecureNative api key!');
+        return reject(false);
+      }
+
       if (!this.isAgentStarted) {
         Logger.debug("Attempting to start agent");
-        if (!this.options.apiKey) {
-          console.error('You must pass your SecureNative api key!');
+
+        try {
+          // obtain session
+          const data = await this.agentLogin();
+          if (data.sessionId) {
+            this.eventManager.setSessionId(data.sessionId);
+            this.eventManager.startEventsPersist();
+            this.isAgentStarted = true;
+
+            Logger.debug("Agent successfuly started!");
+            return resolve(true);
+          } else {
+            Logger.debug("No session obtained, unable to start agent!");
+          }
+        } catch (ex) {
+          const backOff = Math.ceil(Math.random() * 10) * 1000;
+          Logger.debug("Failed to start agent, will retry after backoff", backOff);
+          setTimeout(() => this.startAgent().catch(() => { }), backOff);
           return reject(false);
-        }
-
-        if (this.options.disable) {
-          Logger.debug("Skipping agent start");
-          return resolve(false);
-        }
-
-        // create middleware
-        this.middleware = createMiddleware(this);
-        this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware);
-        this.middleware.verifyRequest = this.middleware.verifyRequest.bind(this.middleware);
-
-        // apply interceptors
-        InterceptorManager.applyInterceptors(this.moduleManager, this.options, this.middleware.verifyRequest, this.middleware.errorHandler);
-
-        // obtain session
-        const data = await this.agentLogin();
-        if (data.sessionId) {
-          this.eventManager.setSessionId(data.sessionId);
-          this.eventManager.startEventsPersist();
-          this.isAgentStarted = true;
-
-          Logger.debug("Agent successfuly started!");
-          resolve(true);
-        } else {
-          Logger.debug("No session obtained, unable to start agent!");
         }
       } else {
         Logger.debug("Agent already started, skipping");
+        return resolve(true);
       }
       reject(false);
     });
