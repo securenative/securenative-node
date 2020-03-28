@@ -54,9 +54,9 @@ describe('SecureNative', () => {
     this.timeout(timeout + 100);
 
     const actionSet = new ActionSet("ActionTest");
-    actionSet.add(SetType.IP, ip, timeout);
-    actionSet.add(SetType.USER, user, timeout);
-    actionSet.add(SetType.COUNTRY, country, timeout);
+    actionSet.add(SetType.IP, ip, Date.now(), timeout / 1000);
+    actionSet.add(SetType.USER, user, Date.now(), timeout / 1000);
+    actionSet.add(SetType.COUNTRY, country, Date.now(), timeout / 1000);
 
     setTimeout(function () {
       expect(actionSet.has(SetType.IP, ip)).to.be.false;
@@ -75,8 +75,8 @@ describe('SecureNative', () => {
     this.timeout(timeout + 100);
 
     const actionSet = new ActionSet("ActionTest");
-    actionSet.add(SetType.IP, ip, 1000);
-    actionSet.add(SetType.IP, ip2, 10000);
+    actionSet.add(SetType.IP, ip, Date.now(), 1);
+    actionSet.add(SetType.IP, ip2, Date.now(), 100);
 
     setTimeout(function () {
       expect(actionSet.has(SetType.IP, ip)).to.be.false;
@@ -94,8 +94,8 @@ describe('SecureNative', () => {
     this.timeout(timeout + 100);
 
     const actionSet = new ActionSet("ActionTest");
-    actionSet.add(SetType.USER, user, 1000);
-    actionSet.add(SetType.USER, user2, 10000);
+    actionSet.add(SetType.USER, user, Date.now(), 1);
+    actionSet.add(SetType.USER, user2, Date.now(), 10);
 
     setTimeout(function () {
       expect(actionSet.has(SetType.USER, user)).to.be.false;
