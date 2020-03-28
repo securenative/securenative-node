@@ -17,7 +17,7 @@
     "start": "tsc -w",
     "build": "tsc",
     "debug-inspector": "node-debug index.ts --debug-brk",
-    "test": "NODE_ENV=test mocha -r ts-node/register src/action-set.spec.ts",
+    "test": "NODE_ENV=test mocha -r ts-node/register src/**/*.spec.ts",
     "publish": "npm publish --access public"
   },
   "dependencies": {

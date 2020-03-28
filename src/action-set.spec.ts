@@ -6,7 +6,7 @@ import SetType from './enums/set-type';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe('SecureNative', () => {
+describe('ActionSet Tests', () => {
   beforeEach(() => {
     this.actionSet = new ActionSet("ActionTest");
   })

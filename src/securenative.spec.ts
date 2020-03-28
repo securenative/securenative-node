@@ -1,6 +1,6 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import SecureNative from './securenative';
+import SecureNative from "./securenative";
 import { SecureNativeOptions } from './types/securenative-options';
 import ConfigurationManager from './configuration-manager';
 import ModuleManager from './module-manager';
@@ -11,7 +11,7 @@ const expect = chai.expect;
 const API_KEY = "DC48C86C04DF0005FB4DE3629AB1F95A922274B0BCACAE326A47DCEA7D6EA6E3";
 
 describe('SecureNative', () => {
-  it('Should fail creating instance if apikey is missing', () => {
+  it.only('Should fail creating instance if apikey is missing', () => {
     expect(() => new SecureNative(null, null)).to.throw('You must pass your SecureNative api key');
   });
 
