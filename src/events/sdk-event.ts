@@ -1,47 +1,61 @@
-import IEvent from "./event";
-import { KeyValuePair } from "../types/key-value-pair";
-import { EventOptions } from "../types/event-options";
-import { cookieIdFromRequest, secureheaderFromRequest, decrypt, clientIpFromRequest, remoteIpFromRequest, userAgentFromRequest } from "../utils/utils";
-import { Logger } from "../logger";
-import { v4 } from "uuid";
-import EventType from "../enums/event-type";
-import { SecureNativeOptions } from "../types/securenative-options";
+import IEvent from './event';
+import { KeyValuePair } from '../types/key-value-pair';
+import { EventOptions, RequestContext } from '../types/event-options';
+import { decrypt } from '../utils/utils';
+import { Logger } from '../logger';
+import { v4 } from 'uuid';
+import { SecureNativeOptions } from '../types/securenative-options';
 
 export default class SDKEvent implements IEvent {
+  public id: string;
   public eventType: string;
-  public cid: string;
-  public vid: string;
-  public fp: string;
-  public ip: string;
-  public remoteIP: string;
-  public userAgent: string;
   public user: {
-    id: string
+    id: string;
+    name: string;
+    email: string;
+  };
+  public context: {
+    cid: string;
+    fp: string;
+    ip: string;
+    remoteIp: string;
+    headers: Array<KeyValuePair>;
+    url: string;
+    method: string;
+    body: string;
   };
   public ts: number;
-  public device: {};
   public params?: Array<KeyValuePair>;
 
-  constructor(req: any, opts: EventOptions, options: SecureNativeOptions) {
-    Logger.debug("Building new SDK event");
-    const cookie = cookieIdFromRequest(req, options) || secureheaderFromRequest(req) || '{}';
-    Logger.debug("Cookie from request", cookie);
-    const cookieDecoded = decrypt(cookie, options.apiKey);
-    Logger.debug("Cookie decoded", cookieDecoded);
-    const clientFP = JSON.parse(cookieDecoded) || {};
-    Logger.debug("Extracted user FP:", clientFP);
-    this.eventType = opts.eventType || EventType.LOG_IN;
-    this.cid = clientFP.cid || '';
-    this.vid = v4();
-    this.fp = clientFP.fp || '';
-    this.ip = opts.ip || clientIpFromRequest(req);
-    this.remoteIP = opts.remoteIp || remoteIpFromRequest(req);
-    this.userAgent = opts.userAgent || userAgentFromRequest(req);
-    this.user = opts.user || {
-      id: 'anonymous'
+  constructor(event: EventOptions, options: SecureNativeOptions) {
+    Logger.debug('Building SDK event');
+    const decryptedToken = decrypt(event.context.clientToken, options.apiKey);
+    Logger.debug('Decrypted client token', decryptedToken);
+    const parsedToken = JSON.parse(decryptedToken) || {};
+    Logger.debug('Parsed client token:', parsedToken);
+
+    const user: any = event.user || {};
+    const context: any = event.context || {};
+
+    this.id = v4();
+    this.eventType = event.eventType;
+    this.user = {
+      id: user.id || '',
+      name: user.name || '',
+      email: user.email || '',
     };
-    this.ts = Date.now();
-    this.device = opts.device || {};
-    this.params = opts.params;
+
+    this.context = {
+      cid: parsedToken.cid || '',
+      fp: parsedToken.fp || '',
+      ip: context.ip || '',
+      remoteIp: context.remoteIp || '',
+      body: context.body || '',
+      headers: context.headers || [],
+      method: context.method || '',
+      url: context.url,
+    };
+    this.ts = event.timestamp || Date.now();
+    this.params = event.params;
   }
 }

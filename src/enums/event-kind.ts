@@ -1,7 +1,6 @@
 export enum EventKind {
   SDK,
   ERROR,
-  REQUEST,
   CONFIG,
   ATTACK,
   METRIC,

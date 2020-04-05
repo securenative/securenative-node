@@ -74,15 +74,13 @@ const headersFromRequest = (req: any): Array<KeyValuePair> => Object.entries(req
   return { key, value: encodeURI(value) }
 });
 
-
-const cookieIdFromRequest = (req: any, options) => {
+const cookieValueFromRequest = (req: any, name: string) => {
   if (!req) {
     return null;
   }
-  const cookieName = options.cookieName || "_sn";
   const cookies = parse(req.headers['cookie'] || '');
 
-  return cookies[cookieName] || null;
+  return cookies[name] || null;
 }
 
 const secureheaderFromRequest = (req: any) => {
@@ -94,7 +92,7 @@ const secureheaderFromRequest = (req: any) => {
 }
 
 const getDeviceFp = (req, options) => {
-  const cookie = cookieIdFromRequest(req, options) || secureheaderFromRequest(req) || '{}';
+  const cookie = cookieValueFromRequest(req, '_sn') || secureheaderFromRequest(req) || '{}';
   const cookieDecoded = decrypt(cookie, options.apiKey);
   const clientFP = JSON.parse(cookieDecoded) || {};
   return clientFP.fp || '';
@@ -192,7 +190,7 @@ export {
   remoteIpFromRequest,
   userAgentFromRequest,
   headersFromRequest,
-  cookieIdFromRequest,
+  cookieValueFromRequest,
   secureheaderFromRequest,
   getDeviceFp,
   promiseTimeout,

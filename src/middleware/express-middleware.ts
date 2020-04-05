@@ -3,8 +3,6 @@ import SecureNative from './../securenative';
 import { Middleware, IMiddleware } from './middleware';
 import ActionType from '../enums/action-type';
 import { Logger } from './../logger';
-import { RequestOptions } from '../types/request-options';
-import { KeyValuePair } from '../types/key-value-pair';
 
 export default class ExpressMiddleware extends Middleware implements IMiddleware {
   private _routes: Array<string> = [];

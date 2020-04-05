@@ -2,7 +2,7 @@
 import { SecureNativeOptions } from './types/securenative-options';
 import { EventKind } from './enums/event-kind';
 import { createEvent } from './events/event-factory';
-import { EventOptions } from './types/event-options';
+import { EventOptions, RequestContext } from './types/event-options';
 import EventManager from './event-manager';
 import RiskResult from './types/risk-result';
 import VerifyResult from './types/verify-result';
@@ -10,16 +10,16 @@ import { IMiddleware } from './middleware/middleware';
 import { createMiddleware } from './middleware/midlleware-factory';
 import ModuleManager from './module-manager';
 import InterceptorManager from './interceptors/interceptor-manager';
-import { decrypt } from './utils/utils';
+import { decrypt, cookieValueFromRequest, headersFromRequest, clientIpFromRequest, remoteIpFromRequest, secureheaderFromRequest } from './utils/utils';
 import ActionType from './enums/action-type';
 import { Logger } from './logger';
 import HeartBeatManager from './heartbeat-manager';
-import { RequestOptions } from './types/request-options';
 import { AgentLoginOptions } from './types/agent-login-options';
 import RulesManager from './rules/rule-manager';
 import ActionManager from './actions/action-manager';
 import ApiRoute from './enums/api-route';
 import { AgentConfigOptions } from './types/agent-config-options';
+import SessionManager from './session-manager';
 
 const MAX_CUSTOM_PARAMS = 6;
 
@@ -49,22 +49,57 @@ export default class SecureNative {
     return this.options.apiKey;
   }
 
-  public track(opts: EventOptions, req?: any) {
+  public contextFromRequest(req: any): RequestContext {
+    const { url, method, body } = req;
+    
+    return {
+      url,
+      method,
+      body,
+      clientToken: cookieValueFromRequest(req, '_sn') || secureheaderFromRequest(req) || '{}',
+      headers: headersFromRequest(req),
+      ip: clientIpFromRequest(req),
+      remoteIp: remoteIpFromRequest(req)
+    }
+  }
+
+  private mergeContexts(manualContext: RequestContext, autoContext: RequestContext): RequestContext{
+    const headers = autoContext.headers.filter(ah => !manualContext.headers.some(mh => mh.key === ah.key));
+    return {
+      body: manualContext.body || autoContext.body,
+      clientToken: manualContext.clientToken || autoContext.clientToken,
+      headers: [...headers, ...manualContext.headers],
+      ip: manualContext.ip || autoContext.ip,
+      method: manualContext.method || autoContext.method,
+      remoteIp: manualContext.remoteIp || autoContext.ip,
+      url: manualContext.url || autoContext.url
+    }
+  }
+
+  public track(opts: EventOptions) {
     Logger.debug("Track event call", opts);
     if (opts && opts.params && opts.params.length > MAX_CUSTOM_PARAMS) {
       throw new Error(`You can only specify maximum of ${MAX_CUSTOM_PARAMS} params`);
     }
 
+    const { req } = SessionManager.getLastSession();
+    const ctx = this.contextFromRequest(req);
+    const eventOptions = Object.assign({}, opts, { context: this.mergeContexts(opts.context, ctx) });
     const requestUrl = `${this.options.apiUrl}/${ApiRoute.Track}`;
 
-    const event = createEvent(EventKind.SDK, req, opts, this.options);
+    const event = createEvent(EventKind.SDK, eventOptions, this.options);
     this.eventManager.sendAsync(event, requestUrl);
   }
 
-  public async verify(opts: EventOptions, req?: any): Promise<VerifyResult> {
+  public async verify(opts: EventOptions): Promise<VerifyResult> {
     Logger.debug("Verify risk call", opts);
+
+    const { req } = SessionManager.getLastSession();
+    const ctx = this.contextFromRequest(req);
+    const eventOptions = Object.assign({}, opts, { context: this.mergeContexts(opts.context, ctx) });
+
     const requestUrl = `${this.options.apiUrl}/${ApiRoute.Verify}`;
-    const event = createEvent(EventKind.SDK, req, opts, this.options);
+    const event = createEvent(EventKind.SDK, eventOptions, this.options);
 
     try {
       const result = await this.eventManager.sendSync<VerifyResult>(event, requestUrl);
@@ -80,10 +115,10 @@ export default class SecureNative {
     }
   }
 
-  public async risk(opts: RequestOptions): Promise<RiskResult> {
+  public async risk(opts: EventOptions): Promise<RiskResult> {
     Logger.debug("Risk call", opts);
     const requestUrl = `${this.options.apiUrl}/${ApiRoute.Risk}`;
-    const event = createEvent(EventKind.REQUEST, opts);
+    const event = createEvent(EventKind.SDK, opts);
     try {
       Logger.debug("Risk event", JSON.stringify(event));
       const result = await this.eventManager.sendSync<any>(event, requestUrl);

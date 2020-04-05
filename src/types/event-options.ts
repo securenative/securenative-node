@@ -1,16 +1,24 @@
-import EventType from "../enums/event-type";
-import { KeyValuePair } from "./key-value-pair";
+import EventType from '../enums/event-type';
+import { KeyValuePair } from './key-value-pair';
+
+export type RequestContext = {
+  clientToken?: string;
+  ip?: string;
+  remoteIp?: string;
+  headers?: Array<KeyValuePair>;
+  url?: string;
+  method?: string;
+  body?: string;
+};
 
 export type EventOptions = {
-  ip: string;
-  userAgent: string;
-  eventType?: EventType | string;
-  remoteIp?: string;
+  eventType: EventType | string;
   user?: {
     id: string;
     name?: string;
     email?: string;
-  }
-  device?: {};
+  };
+  context: RequestContext;
+  timestamp?: number;
   params?: Array<KeyValuePair>;
-}
+};
