@@ -1,11 +1,11 @@
 import IEvent from './event';
-import { EventTypes } from '..';
+import EventType from './../enums/event-type'
 
 export default class ErrorEvent implements IEvent {
   private name: string;
   private message: string;
   private stackTrace: string;
-  eventType: string = EventTypes.ERROR;
+  eventType: string = EventType.ERROR;
   ts: number;
 
   constructor(err: Error) {

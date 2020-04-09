@@ -45,7 +45,11 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
           const clientIp = clientIpFromRequest(req);
           const deviceFP = getDeviceFp(req, this.options);
 
-          if (ActionsList.whitelist.has(SetType.IP, clientIp) || ActionsList.whitelist.has(SetType.USER, deviceFP) || ActionsList.whitelist.has(SetType.PATH, url)) {
+          if (
+            ActionsList.whitelist.has(SetType.IP, clientIp) ||
+            ActionsList.whitelist.has(SetType.USER, deviceFP) ||
+            ActionsList.whitelist.has(SetType.PATH, url)
+          ) {
             req.sn_whitelisted = true;
           } else if (ActionsList.blackList.has(SetType.IP, clientIp) || ActionsList.blackList.has(SetType.USER, deviceFP)) {
             super.intercept(snuid, 'block');
@@ -61,7 +65,6 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
             return original.apply(this, arguments);
           };
         });
-
 
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'writeHead', (original) => {
           const intercept = super.intercept.bind(this);
@@ -86,13 +89,14 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
         });
 
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'end', (original) => {
+          const intercept = super.intercept.bind(this);
           return function () {
-            SessionManager.cleanSession(this.req && this.req.sn_uid);
-            if (this && this.sn_finished) {
-              return;
+            if (!this && !this.sn_finished) {
+              intercept(this.req && this.req.sn_uid, 'end');
+              return original.apply(this, arguments);
             }
-            return original.apply(this, arguments);
-          }
+            return SessionManager.cleanSession(this.req && this.req.sn_uid);
+          };
         });
 
         return exports;

@@ -9,6 +9,6 @@ export type SecureNativeOptions = {
   timeout?: number;
   autoSend?: boolean;
   disable?: boolean;
-  debugMode?: boolean;
+  logLevel?: string;
   minSupportedVersion?: string;
 }

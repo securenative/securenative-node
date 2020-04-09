@@ -10,7 +10,7 @@ export default class SessionManager {
   private static session: Map<string, Session> = new Map<string, Session>();
 
   static getLastSession(): Session {
-    return SessionManager.session.get(SessionManager.lastSessionId);
+    return SessionManager.session.get(SessionManager.lastSessionId) || { req: null, res: null };
   }
 
   static getSession(id: string): Session {

@@ -1,9 +1,7 @@
-import { v4 } from 'uuid';
-import fetch from 'node-fetch';
 import IEvent from './events/event';
 import { SecureNativeOptions } from './types/securenative-options';
 import { FetchOptions } from './types/fetch-options';
-import { promiseTimeout, decrypt } from './utils/utils';
+import { promiseTimeout } from './utils/utils';
 import { Logger } from './logger';
 
 export default class EventManager {
@@ -12,7 +10,7 @@ export default class EventManager {
   private sendEnabled: Boolean = false;
   private timeoutId = null;
 
-  constructor(private options: SecureNativeOptions) {
+  constructor(private fetcher: any, private options: SecureNativeOptions) {
     this.defaultFetchOptions = {
       url: options.apiUrl,
       options: {
@@ -34,7 +32,7 @@ export default class EventManager {
     }, { timeout });
     Logger.debug("Attempting to send event", eventOptions);
     try {
-      const resp = await fetch(requestUrl, eventOptions);
+      const resp = await this.fetcher(requestUrl, eventOptions);
       Logger.debug("Successfuly sent event", eventOptions);
       if (resp.status >= 200 && resp.status < 300) {
         Logger.debug("Got resp status:", resp.status);
@@ -45,7 +43,7 @@ export default class EventManager {
       const text = await resp.text();
       return Promise.reject({ status: resp.status, err: text });
     } catch (ex) {
-      Logger.debug("Failed to send event", ex);
+      Logger.error("Failed to send event", ex);
       return Promise.reject(ex);
     }
   }
@@ -70,11 +68,11 @@ export default class EventManager {
   private async sendEvents() {
     if (this.events.length > 0 && this.sendEnabled) {
       const fetchEvent = this.events.shift();
-      await promiseTimeout(fetch(fetchEvent.url, fetchEvent.options), this.options.timeout).then(() => {
+      await promiseTimeout(this.fetcher(fetchEvent.url, fetchEvent.options), this.options.timeout).then(() => {
         Logger.debug("Event successfully sent", fetchEvent);
       }).catch((err) => {
         if (fetchEvent.retry) {
-          Logger.debug("Failed to send event", err);
+          Logger.error("Failed to send event", err);
           this.events.unshift(fetchEvent);
           const backOff = Math.ceil(Math.random() * 10) * 1000;
           Logger.debug("BackOff automatic sending by", backOff);

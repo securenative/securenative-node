@@ -16,7 +16,7 @@ const configMap: Object = {
   'SECURENATIVE_TIMEOUT': 'timeout',
   'SECURENATIVE_AUTO_SEND': 'autoSend',
   'SECURENATIVE_DISABLE': 'disable',
-  'SECURENATIVE_DEBUG_MODE': 'debugMode'
+  'SECURENATIVE_LOG_LEVEL': 'logLevel'
 }
 
 export default class ConfigurationManager {
@@ -58,7 +58,7 @@ export default class ConfigurationManager {
         timeout: fileConfig['timeout'] || toNumber(process.env.SECURENATIVE_TIMEOUT, 1500),
         autoSend: fileConfig['autoSend'] || toBoolean(process.env.SECURENATIVE_AUTO_SEND, true),
         disable: fileConfig['disable'] || toBoolean(process.env.SECURENATIVE_DISABLE, false),
-        debugMode: fileConfig['debugMode'] || toBoolean(process.env.SECURENATIVE_DEBUG_MODE, false),
+        logLevel: fileConfig['logLevel'] || process.env.SECURENATIVE_LOG_LEVEL || 'fatal',
         minSupportedVersion: '4.9.1',
       };
     }

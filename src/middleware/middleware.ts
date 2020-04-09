@@ -3,6 +3,7 @@ import EventType from '../enums/event-type';
 import RiskResult from '../types/risk-result';
 import { Logger } from './../logger';
 import SecureNative from './../securenative';
+import { contextFromRequest } from '../utils/utils';
 
 const SIGNATURE_KEY = 'x-securenative';
 
@@ -19,17 +20,10 @@ export abstract class Middleware {
     const signature = headers[SIGNATURE_KEY] || '';
     // calculating signature
     const hmac = createHmac('sha512', apiKey);
-    const comparison_signature = hmac
-      .update(JSON.stringify(body))
-      .digest('hex');
+    const comparison_signature = hmac.update(JSON.stringify(body)).digest('hex');
 
     // comparing signatures
-    if (
-      !timingSafeEqual(
-        Buffer.from(signature.toString()),
-        Buffer.from(comparison_signature)
-      )
-    ) {
+    if (!timingSafeEqual(Buffer.from(signature.toString()), Buffer.from(comparison_signature))) {
       return false;
     }
 
@@ -37,8 +31,8 @@ export abstract class Middleware {
   }
 
   async executeRisk(req): Promise<RiskResult> {
-    const context = this.secureNative.contextFromRequest(req);
-    const resp = await this.secureNative.risk({
+    const context = contextFromRequest(req);
+    const resp = await this.secureNative.apiManager.risk({
       eventType: EventType.RISK,
       context: context,
     });

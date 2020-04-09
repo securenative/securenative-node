@@ -11,6 +11,11 @@ export type RequestContext = {
   body?: string;
 };
 
+export type ResponseContext = {
+  status?: number;
+  headers?: Array<KeyValuePair>;
+};
+
 export type EventOptions = {
   eventType: EventType | string;
   user?: {
@@ -18,7 +23,7 @@ export type EventOptions = {
     name?: string;
     email?: string;
   };
-  context: RequestContext;
+  context?: RequestContext;
   timestamp?: number;
   params?: Array<KeyValuePair>;
 };

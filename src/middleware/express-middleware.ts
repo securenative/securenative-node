@@ -58,7 +58,7 @@ export default class ExpressMiddleware extends Middleware implements IMiddleware
 
   async errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
     // report error
-    super.secureNative.error(err);
+    super.secureNative.apiManager.agentError(err);
     next(err);
   }
 }

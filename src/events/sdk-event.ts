@@ -1,10 +1,11 @@
 import IEvent from './event';
 import { KeyValuePair } from '../types/key-value-pair';
-import { EventOptions, RequestContext } from '../types/event-options';
-import { decrypt } from '../utils/utils';
+import { EventOptions } from '../types/event-options';
+import { decrypt, mergeRequestContexts, contextFromRequest, contextFromResponse } from '../utils/utils';
 import { Logger } from '../logger';
 import { v4 } from 'uuid';
 import { SecureNativeOptions } from '../types/securenative-options';
+import SessionManager from '../session-manager';
 
 export default class SDKEvent implements IEvent {
   public id: string;
@@ -14,7 +15,7 @@ export default class SDKEvent implements IEvent {
     name: string;
     email: string;
   };
-  public context: {
+  public request: {
     cid: string;
     fp: string;
     ip: string;
@@ -24,18 +25,26 @@ export default class SDKEvent implements IEvent {
     method: string;
     body: string;
   };
+  public response: {
+    status: number;
+    headers: Array<KeyValuePair>;
+  };
   public ts: number;
   public params?: Array<KeyValuePair>;
 
   constructor(event: EventOptions, options: SecureNativeOptions) {
     Logger.debug('Building SDK event');
-    const decryptedToken = decrypt(event.context.clientToken, options.apiKey);
+    const decryptedToken = decrypt(event.context?.clientToken, options.apiKey);
     Logger.debug('Decrypted client token', decryptedToken);
     const parsedToken = JSON.parse(decryptedToken) || {};
     Logger.debug('Parsed client token:', parsedToken);
 
     const user: any = event.user || {};
-    const context: any = event.context || {};
+
+    // extract info from session
+    const { req, res } = SessionManager.getLastSession();
+    const reqCtx = mergeRequestContexts(event.context || {}, contextFromRequest(req));
+    const resCtx = contextFromResponse(res);
 
     this.id = v4();
     this.eventType = event.eventType;
@@ -45,17 +54,23 @@ export default class SDKEvent implements IEvent {
       email: user.email || '',
     };
 
-    this.context = {
+    this.request = {
       cid: parsedToken.cid || '',
       fp: parsedToken.fp || '',
-      ip: context.ip || '',
-      remoteIp: context.remoteIp || '',
-      body: context.body || '',
-      headers: context.headers || [],
-      method: context.method || '',
-      url: context.url,
+      ip: reqCtx.ip || '',
+      remoteIp: reqCtx.remoteIp || '',
+      method: reqCtx.method || '',
+      url: reqCtx.url,
+      body: reqCtx.body || '',
+      headers: reqCtx.headers || [],
     };
+
+    this.response = {
+      status: resCtx.status,
+      headers: resCtx.headers || [],
+    };
+
     this.ts = event.timestamp || Date.now();
-    this.params = event.params;
+    this.params = event.params || [];
   }
 }
