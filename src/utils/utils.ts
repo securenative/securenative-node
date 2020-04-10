@@ -143,6 +143,15 @@ const mergeRequestContexts = (manualContext: RequestContext, autoContext: Reques
   };
 };
 
+const delay = (timeout): Promise<void> => new Promise((resolve) => setTimeout(resolve, timeout));
+
+const fromEntries = (iterable) => {
+  return [...iterable].reduce((obj, [key, val]) => {
+    obj[key] = val;
+    return obj;
+  }, {});
+};
+
 const getDeviceFp = (req, options) => {
   const cookie = cookieValueFromRequest(req, '_sn') || secureheaderFromRequest(req) || '{}';
   const cookieDecoded = decrypt(cookie, options.apiKey);
@@ -217,7 +226,31 @@ function toNumber(str, defaultValue: number) {
 }
 
 function toBoolean(str, defaultValue: boolean) {
-  return str === 'true' || str === '1' || str === 'false' || str === '0' ? Boolean(str) : defaultValue;
+  if (str === 'True' || str === 'true' || str === '1') {
+    return true;
+  } else if (str === 'False' || str === 'false' || str === '0') {
+    return false;
+  }
+
+  return defaultValue;
+}
+
+function isEnum<T extends string, TEnumValue extends string>(enumVariable: { [key in T]: TEnumValue }, value: any): boolean {
+  const enumValues = Object.values(enumVariable);
+  return enumValues.includes(value);
+}
+
+function toEnum<T extends string, TEnumValue extends string>(
+  enumVariable: { [key in T]: TEnumValue },
+  value: any,
+  defaultValue: TEnumValue
+): TEnumValue {
+  const enumValues = Object.values(enumVariable);
+  if (enumValues.includes(value)) {
+    return value;
+  }
+  Logger.error(`Unable to parse ${value} as instance of ${enumVariable}, default value: ${defaultValue} will be used`);
+  return defaultValue;
 }
 
 function calculateHash(str: string): string {
@@ -247,6 +280,10 @@ export {
   decrypt,
   toNumber,
   toBoolean,
+  isEnum,
+  toEnum,
+  delay,
+  fromEntries,
   calculateHash,
   isModuleExists,
   contextFromRequest,

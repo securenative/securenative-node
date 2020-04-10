@@ -17,6 +17,7 @@ import AgentLoginEvent from './events/agent-login-event';
 import ModuleManager from './module-manager';
 import { AgentConfigOptions } from './types/agent-config-options';
 import AgentConfigEvent from './events/agent-config-event';
+import FailoveStrategy from './enums/failover-strategy';
 
 const MAX_CUSTOM_PARAMS = 6;
 
@@ -42,15 +43,13 @@ export default class ApiManager {
 
     try {
       const result = await this.eventManager.sendSync<VerifyResult>(event, requestUrl);
-      Logger.debug('Successfuly called virify', result);
+      Logger.debug('Successfuly called verify', result);
       return result;
     } catch (ex) {
-      Logger.error('Failed to call virify', ex);
-      return {
-        riskLevel: 'low',
-        score: 0,
-        triggers: [],
-      };
+      Logger.error('Failed to call verify', ex);
+      return this.options.failoverStrategy === FailoveStrategy.FailOpen
+        ? { riskLevel: 'low', score: 0, triggers: [] }
+        : { riskLevel: 'high', score: 1, triggers: [] };
     }
   }
 
