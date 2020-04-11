@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+      - dev-* 
+  pull_request:
+    branches:
+      - master
+      - dev
+      - dev-* 
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run Tests
+        run: npm test
