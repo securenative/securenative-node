@@ -1,3 +1,4 @@
+import fetch from 'node-fetch';
 import ConfigurationManager from "./configuration-manager";
 import SecureNative from "./securenative";
 import EventType from './enums/event-type';
@@ -7,6 +8,7 @@ import { Package, PackageManager } from "./package-manager";
 import { join } from "path";
 import ModuleManager from "./module-manager";
 import { getHostIdSync } from "./utils/host-utils";
+import EventManager from "./event-manager";
 
 const PACKAGE_FILE_NAME = 'package.json';
 const appPkg: Package = PackageManager.getPackage(join(process.cwd(), PACKAGE_FILE_NAME));
@@ -21,7 +23,8 @@ if (!config.appName) {
 ConfigurationManager.setConfigKey('hostId', hostId);
 
 const moduleManager = new ModuleManager(appPkg);
-const secureNative = new SecureNative(moduleManager, config);
+const eventManager = new EventManager(fetch, this.options);
+const secureNative = new SecureNative(moduleManager, eventManager, config);
 
 // init logger
 Logger.initLogger(config);
@@ -36,16 +39,18 @@ if (compareVersions(process.version, config.minSupportedVersion) < 0) {
     process.on(eventType, (exitCode) => {
       Logger.debug('Received exit signal', exitCode);
       //cleanup
-      secureNative.stopAgent().finally(() => process.exit());
+      secureNative.agent.stopAgent().finally(() => process.exit());
     });
   });
   process.once('beforeExit', function () {
-    secureNative.stopAgent().catch(() => { });
+    secureNative.agent.stopAgent().catch(() => { });
   });
-  secureNative.startAgent().catch(() => { });
+  secureNative.agent.startAgent().catch(() => { });
 }
 
+const SDK = secureNative.SDK;
+
 export {
-  secureNative,
+  SDK as secureNative,
   EventType as EventTypes
 };

@@ -1,3 +1,5 @@
+import FailoveStrategy from "../enums/failover-strategy";
+
 export type SecureNativeOptions = {
   apiKey?: string;
   appName?: string;
@@ -9,6 +11,7 @@ export type SecureNativeOptions = {
   timeout?: number;
   autoSend?: boolean;
   disable?: boolean;
-  debugMode?: boolean;
+  logLevel?: string;
+  failoverStrategy?: FailoveStrategy;
   minSupportedVersion?: string;
 }

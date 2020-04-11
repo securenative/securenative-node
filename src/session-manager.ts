@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse } from "http";
+import { IncomingMessage, ServerResponse } from 'http';
 
 export interface Session {
   req: IncomingMessage | any;
@@ -6,7 +6,12 @@ export interface Session {
 }
 
 export default class SessionManager {
+  private static lastSessionId = '';
   private static session: Map<string, Session> = new Map<string, Session>();
+
+  static getLastSession(): Session {
+    return SessionManager.session.get(SessionManager.lastSessionId) || { req: null, res: null };
+  }
 
   static getSession(id: string): Session {
     return SessionManager.session.get(id);
@@ -16,6 +21,9 @@ export default class SessionManager {
     session.req.sn_uid = id;
     session.res.sn_uid = id;
     SessionManager.session.set(id, session);
+
+    //save last session
+    SessionManager.lastSessionId = id;
   }
 
   static cleanSession(id: string) {

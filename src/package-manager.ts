@@ -17,10 +17,10 @@ export class PackageManager {
       const content = readFileSync(filePath, 'utf-8');
       return JSON.parse(content);
     } catch (e) {
-      Logger.debug(`Failed to parse ${filePath}`)
+      Logger.error(`Failed to parse ${filePath}`)
     }
 
-    return {};
+    return null;
   }
 
   private static parsePackageFile(pkg: any): Package {
@@ -42,6 +42,6 @@ export class PackageManager {
 
   public static getPackage(packageFilePath: string): Package {
     const pkg = this.readPackageFile(packageFilePath);
-    return this.parsePackageFile(pkg);
+    return pkg && this.parsePackageFile(pkg) || null;
   }
 }

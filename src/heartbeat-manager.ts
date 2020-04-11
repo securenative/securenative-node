@@ -1,14 +1,20 @@
-import { Logger } from "./logger";
+import { Logger } from './logger';
 
 export default class HeartBeatManager {
   private timeoutId = null;
 
-  constructor(private interval: number, private handler: Function) { }
+  constructor(private interval: number, private handler: Function) {}
 
   startHeartBeatLoop() {
     Logger.debug(`Agent starting heartbeat`);
     this.handler();
-    this.timeoutId = setInterval(this.handler, this.interval);
+    this.timeoutId = setInterval(() => {
+      try {
+        this.handler();
+      } catch (ex) {
+        Logger.error('HeartBeat encountered an error', ex);
+      }
+    }, this.interval);
   }
 
   stopHeartBeatLoop() {

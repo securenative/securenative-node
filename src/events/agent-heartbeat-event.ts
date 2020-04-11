@@ -20,7 +20,7 @@ export default class AgentHeartBeatEvent implements IEvent {
     this.ts = Date.now();
     this.hostId = getHostIdSync();
     this.hostname = hostname();
-    this.agentVersion = AgentHeartBeatEvent.agentPkg.version;
+    this.agentVersion = AgentHeartBeatEvent.agentPkg?.version;
     this.runtime = 'node.js';
   }
 }
