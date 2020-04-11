@@ -7,7 +7,7 @@
 </p>
 <p align="center">
   <a href="https://github.com/securenative/securenative-node">
-    <img alt="Github Actions" src="https://github.com/securenative/securenative-node/workflows/CI/badge.svg">
+    <img alt="Github Actions" src="https://github.com/securenative/securenative-node/workflows/Build/badge.svg">
   </a>
   <a href="https://codecov.io/gh/securenative/securenative-node">
     <img src="https://codecov.io/gh/securenative/securenative-node/branch/master/graph/badge.svg" />
