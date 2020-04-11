@@ -2,12 +2,18 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+      - dev
+      - dev-* 
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
+      - dev
+      - dev-* 
 
 jobs:
-  release:
+  ci:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
