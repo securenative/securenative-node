@@ -9,6 +9,9 @@
   <a href="https://github.com/securenative/securenative-node">
     <img alt="Github Actions" src="https://github.com/securenative/securenative-node/workflows/CI/badge.svg">
   </a>
+  <a href="https://codecov.io/gh/securenative/securenative-node">
+    <img src="https://codecov.io/gh/securenative/securenative-node/branch/master/graph/badge.svg" />
+  </a>
   <a href="https://badge.fury.io/js/%40securenative%2Fsdk"><img src="https://badge.fury.io/js/%40securenative%2Fsdk.svg" alt="npm version" height="20"></a>
 </p>
 <p align="center">
