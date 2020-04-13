@@ -71,7 +71,7 @@
   "release": {
     "access": "public",
     "branches": [
-      "*"
+      "master"
     ]
   }
 }
