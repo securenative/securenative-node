@@ -71,7 +71,7 @@
   "publishConfig": {
     "access": "public",
     "branches": [
-      "master"
+      "refs/tags/*"
     ]
   }
 }
