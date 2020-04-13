@@ -12,7 +12,12 @@
   <a href="https://codecov.io/gh/securenative/securenative-node">
     <img src="https://codecov.io/gh/securenative/securenative-node/branch/master/graph/badge.svg" />
   </a>
-  <a href="https://badge.fury.io/js/%40securenative%2Fsdk"><img src="https://badge.fury.io/js/%40securenative%2Fsdk.svg" alt="npm version" height="20"></a>
+  <a href="https://badge.fury.io/js/%40securenative%2Fsdk">
+    <img src="https://badge.fury.io/js/%40securenative%2Fsdk.svg" alt="npm version" height="20">
+  </a>
+  <a href="https://github.com/semantic-release/semantic-release">
+    <img src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg" alt="npm version">
+  </a>
 </p>
 <p align="center">
   <a href="https://docs.securenative.com">Documentation</a> |
