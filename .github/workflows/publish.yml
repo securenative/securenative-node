@@ -32,6 +32,10 @@ jobs:
         run: npm test
       - name: Run Build        
         run: npm run build
+      - name: Create NPMRC        
+        run: echo //registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }} > .npmrc       
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Release    
         run: npx semantic-release
         env:
