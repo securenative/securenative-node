@@ -7,19 +7,40 @@ import ModuleManager from './module-manager';
 import RulesManager from './rules/rule-manager';
 import ActionManager from './actions/action-manager';
 import ApiManager from './api-manager';
+import InterceptorManager from './interceptors/interceptor-manager';
+import { IMiddleware } from './middleware/middleware';
+import { createMiddleware } from './middleware/midlleware-factory';
 
 export default class AgentManager {
+  public middleware: IMiddleware;
+  private interceptorManager: InterceptorManager;
   private lazyOperation: Promise<any> = Promise.resolve();
   private isAgentStarted: boolean = false;
   private heartBeatManager: HeartBeatManager;
   private configUpdateTs = 0;
 
   constructor(
-    private moduleManager: ModuleManager,
-    private apiManager: ApiManager,
+    public moduleManager: ModuleManager,
+    public apiManager: ApiManager,
     private eventManager: EventManager,
     private options: SecureNativeOptions
-  ) {}
+  ) {
+    this.interceptorManager = new InterceptorManager(moduleManager, this.apiManager, options);
+
+    if (!options.disable) {
+      // create middleware
+      this.middleware = createMiddleware(this);
+      this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware);
+      this.middleware.verifyRequest = this.middleware.verifyRequest.bind(this.middleware);
+
+      // apply interceptors
+      this.interceptorManager.applyInterceptors(this.middleware.verifyRequest, this.middleware.errorHandler);
+    }
+  }
+
+  public get apiKey(): string {
+    return this.options.apiKey;
+  }
 
   private configurationUpdate() {
     // we don't want to rescheduale in case agent is stoped

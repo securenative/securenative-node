@@ -12,11 +12,12 @@ import { SecureNativeOptions } from '../types/securenative-options';
 import { getDeviceFp } from './../utils/utils';
 import SetType from '../enums/set-type';
 import { v4 } from 'uuid';
+import ApiManager from '../api-manager';
 
 export default class HttpsServerInterceptor extends Interceptor implements IInterceptor {
   private name = 'https-server';
   
-  constructor(private moduleManger: ModuleManager, private options: SecureNativeOptions) {
+  constructor(private moduleManger: ModuleManager, private apiManager: ApiManager, private options: SecureNativeOptions) {
     super();
   }
 

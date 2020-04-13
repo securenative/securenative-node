@@ -7,16 +7,18 @@ import { Logger } from '../logger';
 import Hook from 'require-in-the-middle';
 import { wrap } from 'shimmer';
 import ActionsList from './../actions-list';
-import { clientIpFromRequest } from './../utils/utils';
+import { clientIpFromRequest, contextFromRequest } from './../utils/utils';
 import { SecureNativeOptions } from '../types/securenative-options';
 import { getDeviceFp } from './../utils/utils';
 import SetType from '../enums/set-type';
 import { v4 } from 'uuid';
+import EventType from '../enums/event-type';
+import ApiManager from '../api-manager';
 
 export default class HttpServerInterceptor extends Interceptor implements IInterceptor {
   private name = 'http-server';
 
-  constructor(private moduleManger: ModuleManager, private options: SecureNativeOptions) {
+  constructor(private moduleManger: ModuleManager, private apiManager: ApiManager, private options: SecureNativeOptions) {
     super();
   }
 
@@ -90,11 +92,16 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
 
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'end', (original) => {
           const intercept = super.intercept.bind(this);
+          const risk = this.apiManager.risk.bind(this);
+
           return function () {
             if (!this && !this.sn_finished) {
               intercept(this.req && this.req.sn_uid, 'end');
               return original.apply(this, arguments);
             }
+
+            const context = contextFromRequest(this.req);
+            risk({ eventType: EventType.RISK, context: context });
             return SessionManager.cleanSession(this.req && this.req.sn_uid);
           };
         });

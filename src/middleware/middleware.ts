@@ -4,6 +4,7 @@ import RiskResult from '../types/risk-result';
 import { Logger } from './../logger';
 import SecureNative from './../securenative';
 import { contextFromRequest } from '../utils/utils';
+import AgentManager from '../agent-manager';
 
 const SIGNATURE_KEY = 'x-securenative';
 
@@ -14,7 +15,7 @@ export interface IMiddleware {
 }
 
 export abstract class Middleware {
-  constructor(protected secureNative: SecureNative) {}
+  constructor(protected agentManager: AgentManager) {}
 
   verifySignature(headers, body, apiKey): Boolean {
     const signature = headers[SIGNATURE_KEY] || '';
@@ -28,16 +29,5 @@ export abstract class Middleware {
     }
 
     return true;
-  }
-
-  async executeRisk(req): Promise<RiskResult> {
-    const context = contextFromRequest(req);
-    const resp = await this.secureNative.apiManager.risk({
-      eventType: EventType.RISK,
-      context: context,
-    });
-
-    Logger.debug('Risk', resp);
-    return resp;
   }
 }

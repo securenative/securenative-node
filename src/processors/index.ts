@@ -13,5 +13,5 @@ export const processors = {
   DeleteBlacklistedIp,
   WhitelistIp,
   BlockRequest,
-  ChallengeRequest
-}
+  ChallengeRequest,
+};

@@ -15,6 +15,7 @@ import ModuleManager from './module-manager';
 import AgentLoginEvent from './events/agent-login-event';
 import AgentLogoutEvent from './events/agent-logout-event';
 import { delay } from './utils/utils';
+import RequestEvent from './events/request-event';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -29,12 +30,9 @@ const sdkEvent: EventOptions = {
   context: {
     ip: '127.0.0.1',
     clientToken: 'SECURED_CLIENT_TOKEN',
-    headers: [
-      {
-        key: 'user-agent',
-        value: 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405',
-      },
-    ],
+    headers: {
+      'user-agent': 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405',
+    },
   },
   params: [
     {
@@ -89,15 +87,13 @@ describe('ApiManager', () => {
       expect(eventPayload.request).to.have.property('ip', sdkEvent.context.ip);
       expect(eventPayload.request).to.have.property('fp', '');
       expect(eventPayload.request).to.have.property('cid', '');
-      expect(eventPayload.request).to.have.property('body', '');
       //request headers
-      const [header] = sdkEvent.context.headers;
       expect(eventPayload.request).to.have.property('headers');
-      expect(eventPayload.request.headers).to.be.lengthOf(sdkEvent.context.headers.length, 'Incorrect headers length');
-      expect(eventPayload.request.headers.find((h) => h.key == header.key)).to.be.not.null;
-      expect(eventPayload.request.headers.find((h) => h.key == header.key).value).to.be.equal(header.value, 'Invalid header value');
-      //response context
-      expect(eventPayload).to.have.property('response');
+      expect(Object.keys(eventPayload.request.headers)).to.be.lengthOf(Object.keys(sdkEvent.context.headers).length, 'Incorrect headers length');
+
+      Object.entries(sdkEvent.context.headers).forEach(([name, value]) => {
+        expect(eventPayload.request.headers).to.have.property(name, value, 'Invalid property value');
+      });
     } finally {
       await eventManager.stopEventsPersist();
       fetch.restore();
@@ -207,15 +203,13 @@ describe('ApiManager', () => {
       expect(eventPayload.request).to.have.property('ip', sdkEvent.context.ip);
       expect(eventPayload.request).to.have.property('fp', '');
       expect(eventPayload.request).to.have.property('cid', '');
-      expect(eventPayload.request).to.have.property('body', '');
       //request headers
-      const [header] = sdkEvent.context.headers;
       expect(eventPayload.request).to.have.property('headers');
-      expect(eventPayload.request.headers).to.be.lengthOf(sdkEvent.context.headers.length, 'Incorrect headers length');
-      expect(eventPayload.request.headers.find((h) => h.key == header.key)).to.be.not.null;
-      expect(eventPayload.request.headers.find((h) => h.key == header.key).value).to.be.equal(header.value, 'Invalid header value');
-      //response context
-      expect(eventPayload).to.have.property('response');
+      expect(Object.keys(eventPayload.request.headers)).to.be.lengthOf(Object.keys(sdkEvent.context.headers).length, 'Incorrect headers length');
+
+      Object.entries(sdkEvent.context.headers).forEach(([name, value]) => {
+        expect(eventPayload.request.headers).to.have.property(name, value, 'Invalid property value');
+      });
     } finally {
       fetch.restore();
     }
@@ -234,15 +228,12 @@ describe('ApiManager', () => {
       // call verify event
       const verifyResult = await apiManager.verify(sdkEvent);
 
-
       const fetchOptions = fetch.lastOptions();
       const eventPayload: SDKEvent = JSON.parse(fetchOptions.body.toString());
-
-
     } finally {
       fetch.restore();
     }
-  });  
+  });
 
   it('Should call risk event', async () => {
     const options: SecureNativeOptions = {
@@ -262,7 +253,7 @@ describe('ApiManager', () => {
       await apiManager.risk(riskEvent);
 
       const fetchOptions = fetch.lastOptions();
-      const eventPayload: SDKEvent = JSON.parse(fetchOptions.body.toString());
+      const eventPayload: RequestEvent = JSON.parse(fetchOptions.body.toString());
 
       expect(eventPayload).to.be.not.null;
       //timestamp
@@ -283,13 +274,14 @@ describe('ApiManager', () => {
       expect(eventPayload.request).to.have.property('ip', '');
       expect(eventPayload.request).to.have.property('fp', '');
       expect(eventPayload.request).to.have.property('cid', '');
-      expect(eventPayload.request).to.have.property('body', '');
       //request headers
       expect(eventPayload.request).to.have.property('headers');
-      expect(eventPayload.request.headers).to.be.lengthOf(0, 'Incorrect headers length');
+      expect(Object.keys(eventPayload.request.headers)).to.be.lengthOf(0, 'Incorrect headers length');
 
       //response context
       expect(eventPayload).to.have.property('response');
+      expect(eventPayload.response).to.have.property('headers');
+      expect(eventPayload.response).to.have.property('status');
     } finally {
       fetch.restore();
     }

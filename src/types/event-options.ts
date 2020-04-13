@@ -1,19 +1,12 @@
 import EventType from '../enums/event-type';
 import { KeyValuePair } from './key-value-pair';
+import { IncomingHttpHeaders } from 'http2';
 
-export type RequestContext = {
+export type Context = {
   clientToken?: string;
   ip?: string;
   remoteIp?: string;
-  headers?: Array<KeyValuePair>;
-  url?: string;
-  method?: string;
-  body?: string;
-};
-
-export type ResponseContext = {
-  status?: number;
-  headers?: Array<KeyValuePair>;
+  headers?: IncomingHttpHeaders;
 };
 
 export type EventOptions = {
@@ -23,7 +16,7 @@ export type EventOptions = {
     name?: string;
     email?: string;
   };
-  context?: RequestContext;
+  context?: Context;
   timestamp?: number;
   params?: Array<KeyValuePair>;
 };

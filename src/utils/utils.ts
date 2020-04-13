@@ -4,7 +4,8 @@ import { createDecipheriv, randomBytes, createCipheriv } from 'crypto';
 import { createHash } from 'crypto';
 import { KeyValuePair } from '../types/key-value-pair';
 import { Logger } from '../logger';
-import { RequestContext, ResponseContext } from '../types/event-options';
+import { RequestContext, ResponseContext } from '../types/request-context';
+import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http2';
 
 const ALGORITHM = 'aes-256-cbc';
 const BLOCK_SIZE = 16;
@@ -68,24 +69,27 @@ const remoteIpFromRequest = (req: any) => {
   return '';
 };
 
-const userAgentFromRequest = (req: any) => {
-  if (!req) {
-    return '';
-  }
-  return req.headers['user-agent'];
-};
+const headersFromRequest = (req: any): IncomingHttpHeaders =>
+  Object.entries(req?.headers || {})
+    .map(([key, val]) => {
+      const value = Array.isArray(val) ? val.join(',') : val.toString();
+      return { key, value: encodeURI(value) };
+    })
+    .reduce((obj: any, item: KeyValuePair) => {
+      obj[item.key] = item.value;
+      return obj;
+    }, {});
 
-const headersFromRequest = (req: any): Array<KeyValuePair> =>
-  Object.entries(req?.headers || {}).map(([key, val]) => {
-    const value = Array.isArray(val) ? val.join(',') : val.toString();
-    return { key, value: encodeURI(value) };
-  });
-
-const headersFromResponse = (res: any): Array<KeyValuePair> =>
-  Object.entries(res?.getHeaders() || {}).map(([key, val]) => {
-    const value = Array.isArray(val) ? val.join(',') : val.toString();
-    return { key, value: encodeURI(value) };
-  });
+const headersFromResponse = (res: any): OutgoingHttpHeaders =>
+  Object.entries(res?.getHeaders() || {})
+    .map(([key, val]) => {
+      const value = Array.isArray(val) ? val.join(',') : val.toString();
+      return { key, value: encodeURI(value) };
+    })
+    .reduce((obj: any, item: KeyValuePair) => {
+      obj[item.key] = item.value;
+      return obj;
+    }, {});
 
 const cookieValueFromRequest = (req: any, name: string) => {
   if (!req) {
@@ -129,13 +133,10 @@ const contextFromResponse = (res: any): ResponseContext => {
 
 // merge manual and automatic contexts
 const mergeRequestContexts = (manualContext: RequestContext, autoContext: RequestContext): RequestContext => {
-  const autoHeaders = autoContext.headers.filter((ah) => !manualContext.headers.some((mh) => mh.key === ah.key));
-  const manualHeaders = manualContext?.headers || [];
-
   return {
     body: manualContext.body || autoContext.body,
     clientToken: manualContext.clientToken || autoContext.clientToken,
-    headers: [...autoHeaders, ...manualHeaders],
+    headers: { ...autoContext?.headers, ...manualContext?.headers },
     ip: manualContext.ip || autoContext.ip,
     method: manualContext.method || autoContext.method,
     remoteIp: manualContext.remoteIp || autoContext.ip,
@@ -269,7 +270,6 @@ const isModuleExists = (path) => {
 export {
   clientIpFromRequest,
   remoteIpFromRequest,
-  userAgentFromRequest,
   headersFromRequest,
   cookieValueFromRequest,
   secureheaderFromRequest,

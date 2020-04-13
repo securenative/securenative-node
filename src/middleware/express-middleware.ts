@@ -3,11 +3,12 @@ import SecureNative from './../securenative';
 import { Middleware, IMiddleware } from './middleware';
 import ActionType from '../enums/action-type';
 import { Logger } from './../logger';
+import AgentManager from '../agent-manager';
 
 export default class ExpressMiddleware extends Middleware implements IMiddleware {
   private _routes: Array<string> = [];
-  constructor(secureNative: SecureNative) {
-    super(secureNative);
+  constructor(agentManager: AgentManager) {
+    super(agentManager);
   }
 
   verifyWebhook(req: Request, res: Response, next: NextFunction) {
@@ -17,7 +18,7 @@ export default class ExpressMiddleware extends Middleware implements IMiddleware
       return res.status(400).send('Bad Request');
     }
 
-    if (!super.verifySignature(headers, body, this.secureNative.apiKey)) {
+    if (!super.verifySignature(headers, body, this.agentManager.apiKey)) {
       return res.status(401).send('Mismatched signatures');
     }
 
@@ -35,22 +36,6 @@ export default class ExpressMiddleware extends Middleware implements IMiddleware
 
     if (this._routes.includes(req.path)) {
       Logger.debug('Intercepting request');
-      const resp = await super.executeRisk(req);
-
-      switch (resp.action) {
-        case ActionType.ALLOW:
-          return next();
-        case ActionType.BLOCK:
-          if (req.xhr || req.headers.accept.indexOf('json') > -1) {
-            res.status(400).json({ message: 'Request Blocked' });
-          } else {
-            res.status(400).sendFile(process.cwd() + '/node_modules/@securenative/sdk/dist/src/templates/block.html');
-          }
-          break;
-        case ActionType.CHALLENGE:
-          res.status(200).sendFile(process.cwd() + '/node_modules/@securenative/sdk/dist/src/templates/challenge.html');
-          break;
-      }
     }
 
     return next();
@@ -58,7 +43,7 @@ export default class ExpressMiddleware extends Middleware implements IMiddleware
 
   async errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
     // report error
-    super.secureNative.apiManager.agentError(err);
+    super.agentManager.apiManager.agentError(err);
     next(err);
   }
 }

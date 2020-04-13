@@ -18,6 +18,8 @@ import ModuleManager from './module-manager';
 import { AgentConfigOptions } from './types/agent-config-options';
 import AgentConfigEvent from './events/agent-config-event';
 import FailoveStrategy from './enums/failover-strategy';
+import RequestEvent from './events/request-event';
+import { RequestOptions } from './types/request-options';
 
 const MAX_CUSTOM_PARAMS = 6;
 
@@ -53,11 +55,11 @@ export default class ApiManager {
     }
   }
 
-  public async risk(opts: EventOptions): Promise<RiskResult> {
+  public async risk(opts: RequestOptions): Promise<RiskResult> {
     Logger.debug('Risk call', opts);
 
     const requestUrl = `${this.options.apiUrl}/${ApiRoute.Risk}`;
-    const event = createEvent(SDKEvent, opts, this.options);
+    const event = createEvent(RequestEvent, opts, this.options);
     try {
       Logger.debug('Risk event', JSON.stringify(event));
       const result = await this.eventManager.sendSync<any>(event, requestUrl);

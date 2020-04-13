@@ -6,20 +6,23 @@ import KoaInterceptor from './koa-interceptor';
 import HapiInterceptor from './hapi-interceptor';
 import HttpServerInterceptor from './http-server-interceptor';
 import HttpsServerInterceptor from './https-server-interceptor';
+import ApiManager from '../api-manager';
 
 export default class InterceptorManager {
-  private static getAllInterceptors(moduleManager: ModuleManager, options: SecureNativeOptions): Array<IInterceptor> {
+  constructor(private moduleManager: ModuleManager, private apiManager: ApiManager, private options: SecureNativeOptions) {}
+
+  private getAllInterceptors(): Array<IInterceptor> {
     return [
-      new HttpServerInterceptor(moduleManager, options),
-      //new HttpsServerInterceptor(moduleManager),
-      new ExpressInterceptor(moduleManager),
-      new KoaInterceptor(moduleManager),
-      new HapiInterceptor(moduleManager)
+      new HttpServerInterceptor(this.moduleManager, this.apiManager, this.options),
+      new HttpsServerInterceptor(this.moduleManager,this.apiManager, this.options),
+      new ExpressInterceptor(this.moduleManager),
+      new KoaInterceptor(this.moduleManager),
+      new HapiInterceptor(this.moduleManager),
     ];
   }
 
-  static applyInterceptors(moduleManager: ModuleManager, options: SecureNativeOptions, reqMiddleware: any, errMiddleware: any) {
-    const interceptors = InterceptorManager.getAllInterceptors(moduleManager, options);
-    interceptors.forEach(interceptor => interceptor.intercept(reqMiddleware, errMiddleware));
+  applyInterceptors(reqMiddleware: any, errMiddleware: any) {
+    const interceptors = this.getAllInterceptors();
+    interceptors.forEach((interceptor) => interceptor.intercept(reqMiddleware, errMiddleware));
   }
 }
