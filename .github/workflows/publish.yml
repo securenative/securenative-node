@@ -25,6 +25,7 @@ jobs:
         with:
           node-version: 12.9.0
           registry-url: https://registry.npmjs.org/
+          scope: '@securenative'
       - name: Install Dependencies
         run: npm install
       - name: Run Tests
