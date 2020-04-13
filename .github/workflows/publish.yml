@@ -8,21 +8,51 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Notify Starting
+        if: success()
+        id: slack # IMPORTANT: reference this step ID value in future Slack steps
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        uses: voxmedia/github-action-slack-notify-build@v1.1.1
+        with:
+          channel: github-actions
+          status: STARTING
+          color: warning
       - name: Checkout Code
         uses: actions/checkout@v1
       - name: Setup Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 12.9.0
           registry-url: https://registry.npmjs.org/
       - name: Install Dependencies
-          run: npm install
+        run: npm install
       - name: Run Tests
-          run: npm test
+        run: npm test
       - name: Run Build        
-          run: npm run build
+        run: npm run build
       - name: Publish    
-          run: npm publish --access public
-          env:
+        run: npm publish --access public
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Notify slack success
+        if: success()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        uses: voxmedia/github-action-slack-notify-build@v1.1.1
+        with:
+          message_id: ${{ steps.slack.outputs.message_id }}
+          channel: github-actions
+          status: SUCCESS
+          color: good
+      - name: Notify slack fail
+        if: failure()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        uses: voxmedia/github-action-slack-notify-build@v1.1.1
+        with:
+          message_id: ${{ steps.slack.outputs.message_id }}
+          channel: github-actions
+          status: FAILED
+          color: danger

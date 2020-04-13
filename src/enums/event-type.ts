@@ -1,14 +1,17 @@
-enum EventTypes {
+enum EventType {
   AGENT_LOG_IN = "sn.agent.login",
   AGENT_LOG_OUT = "sn.agent.logout",
+  AGENT_CONFIG = "sn.agent.config",
+  HEART_BEAT = "sn.agent.heartbeat",
+  ERROR = "sn.agent.error",
   LOG_IN = "sn.user.login",
   LOG_IN_CHALLENGE = "sn.user.login.challenge",
   LOG_IN_FAILURE = "sn.user.login.failure",
   LOG_OUT = "sn.user.logout",
   SIGN_UP = "sn.user.signup",
-  AUTH_CHALLENGE = "sn.user.auth.challange",
-  AUTH_CHALLENGE_SUCCESS = "sn.user.auth.challange.success",
-  AUTH_CHALLENGE_FAILURE = "sn.user.auth.challange.failure",
+  AUTH_CHALLENGE = "sn.user.auth.challenge",
+  AUTH_CHALLENGE_SUCCESS = "sn.user.auth.challenge.success",
+  AUTH_CHALLENGE_FAILURE = "sn.user.auth.challenge.failure",
   TWO_FACTOR_DISABLE = "sn.user.2fa.disable",
   EMAIL_UPDATE = "sn.user.email.update",
   PASSWORD_RESET = "sn.user.password.reset",
@@ -23,4 +26,4 @@ enum EventTypes {
   RISK = "sn.risk"
 };
 
-export default EventTypes;
+export default EventType;

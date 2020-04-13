@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { Logger } from './logger';
-import { KeyValuePair } from './key-value-pair';
+import { KeyValuePair } from './types/key-value-pair';
 import { calculateHash } from './utils/utils';
 
 export class Package {
@@ -17,10 +17,10 @@ export class PackageManager {
       const content = readFileSync(filePath, 'utf-8');
       return JSON.parse(content);
     } catch (e) {
-      Logger.debug(`Failed to parse ${filePath}`)
+      Logger.error(`Failed to parse ${filePath}`)
     }
 
-    return {};
+    return null;
   }
 
   private static parsePackageFile(pkg: any): Package {
@@ -28,7 +28,8 @@ export class PackageManager {
       return { key: d, value: pkg.dependencies[d] }
     });
 
-    const dependenciesHash = calculateHash(dependencies.join(','));
+    const deps = dependencies.map(d => `${d.key}:${d.value}`).join(',');
+    const dependenciesHash = calculateHash(deps);
 
     return {
       name: pkg.name,
@@ -41,6 +42,6 @@ export class PackageManager {
 
   public static getPackage(packageFilePath: string): Package {
     const pkg = this.readPackageFile(packageFilePath);
-    return this.parsePackageFile(pkg);
+    return pkg && this.parsePackageFile(pkg) || null;
   }
 }

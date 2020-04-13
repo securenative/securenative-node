@@ -1,13 +1,14 @@
 import KoaMiddleware from './koa-middleware';
 import ExpressMiddleware from './express-middleware';
 import { IMiddleware } from './middleware';
-import InterceptModules from '../interceptors/intercept-modules';
+import InterceptionModule from '../enums/interception-module';
 import SecureNative from '../securenative';
+import AgentManager from '../agent-manager';
 
-export function createMiddleware(secureNative: SecureNative): IMiddleware {
-  if (secureNative.moduleManager.Modules[InterceptModules.Koa]) {
-    return new KoaMiddleware(secureNative);
+export function createMiddleware(agentManager: AgentManager): IMiddleware {
+  if (agentManager.moduleManager.Modules[InterceptionModule.Koa]) {
+    return new KoaMiddleware(agentManager);
   }
   //make express as default middleware
-  return new ExpressMiddleware(secureNative);
+  return new ExpressMiddleware(agentManager);
 } 

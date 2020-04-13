@@ -1,13 +1,13 @@
 import { join } from "path";
-import Interceptor from './interceptor';
+import { IInterceptor } from './interceptor';
 import ModuleManager from './../module-manager';
-import InterceptModules from './intercept-modules';
+import InterceptionModule from '../enums/interception-module';
 import { isModuleExists } from './../utils/utils';
 import { Logger } from './../logger';
 
-export default class ExpressInterceptor implements Interceptor {
+export default class ExpressInterceptor implements IInterceptor {
   private name = 'express';
-  private modulePath = join(process.cwd(), InterceptModules.Express);
+  private modulePath = join(process.cwd(), InterceptionModule.Express);
 
   constructor(private moduleManger: ModuleManager) { }
 
@@ -17,7 +17,7 @@ export default class ExpressInterceptor implements Interceptor {
 
   canExecute(): boolean {
     const exists = isModuleExists(this.modulePath);
-    Logger.debug(`Checking ${InterceptModules.Express} module, found: ${exists}`);
+    Logger.debug(`Checking ${InterceptionModule.Express} module, found: ${exists}`);
     return exists;
   }
 

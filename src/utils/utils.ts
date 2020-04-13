@@ -2,6 +2,10 @@ import { parse } from 'cookie';
 import { isV4Format, isV6Format, isPublic, isLoopback, isEqual } from 'ip';
 import { createDecipheriv, randomBytes, createCipheriv } from 'crypto';
 import { createHash } from 'crypto';
+import { KeyValuePair } from '../types/key-value-pair';
+import { Logger } from '../logger';
+import { RequestContext, ResponseContext } from '../types/request-context';
+import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http2';
 
 const ALGORITHM = 'aes-256-cbc';
 const BLOCK_SIZE = 16;
@@ -18,8 +22,12 @@ const clientIpFromRequest = (req: any) => {
     const headers = req.headers;
     for (let i = 0; i < ipHeaders.length; ++i) {
       const header = headers[ipHeaders[i]] || '';
-      if (typeof header === "string") {
-        const list = header.split(',').map((s) => s.trim()).filter(Boolean).filter((x) => isV4Format(x) || isV6Format(x));
+      if (typeof header === 'string') {
+        const list = header
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .filter((x) => isV4Format(x) || isV6Format(x));
         const candidate = list.find((c) => isPublic(c));
         if (candidate !== undefined) {
           return candidate;
@@ -31,7 +39,7 @@ const clientIpFromRequest = (req: any) => {
     }
   }
 
-  let remote = req.connection && req.connection.remoteAddress || '';
+  let remote = (req.connection && req.connection.remoteAddress) || '';
 
   if (!remote || typeof remote !== 'string') {
     return bestCandidate || '';
@@ -42,7 +50,8 @@ const clientIpFromRequest = (req: any) => {
     remote = endRemote;
   }
 
-  if (req.ip && !isV4Format(remote) && !isV6Format(remote)) { // express case
+  if (req.ip && !isV4Format(remote) && !isV6Format(remote)) {
+    // express case
     return req.ip;
   }
 
@@ -51,31 +60,45 @@ const clientIpFromRequest = (req: any) => {
   }
 
   return remote;
-}
+};
 
 const remoteIpFromRequest = (req: any) => {
   if (req && req.connection) {
     return req.connection.remoteAddress;
   }
   return '';
-}
+};
 
-const userAgentFromRequest = (req: any) => {
-  if (!req) {
-    return '';
-  }
-  return req.headers['user-agent'];
-}
+const headersFromRequest = (req: any): IncomingHttpHeaders =>
+  Object.entries(req?.headers || {})
+    .map(([key, val]) => {
+      const value = Array.isArray(val) ? val.join(',') : val.toString();
+      return { key, value: encodeURI(value) };
+    })
+    .reduce((obj: any, item: KeyValuePair) => {
+      obj[item.key] = item.value;
+      return obj;
+    }, {});
 
-const cookieIdFromRequest = (req: any, options) => {
+const headersFromResponse = (res: any): OutgoingHttpHeaders =>
+  Object.entries(res?.getHeaders() || {})
+    .map(([key, val]) => {
+      const value = Array.isArray(val) ? val.join(',') : val.toString();
+      return { key, value: encodeURI(value) };
+    })
+    .reduce((obj: any, item: KeyValuePair) => {
+      obj[item.key] = item.value;
+      return obj;
+    }, {});
+
+const cookieValueFromRequest = (req: any, name: string) => {
   if (!req) {
     return null;
   }
-  const cookieName = options.cookieName || "_sn";
-  const cookies = parse(req.headers['cookie'] || '');
+  const cookies = parse(req?.headers['cookie'] || '');
 
-  return cookies[cookieName] || null;
-}
+  return cookies[name] || null;
+};
 
 const secureheaderFromRequest = (req: any) => {
   if (!req) {
@@ -83,21 +106,70 @@ const secureheaderFromRequest = (req: any) => {
   }
   const secHeader = req.headers['x-securenative'] || '';
   return secHeader.toString() || null;
-}
+};
+
+// extract context from request
+const contextFromRequest = (req: any): RequestContext => {
+  const { url = '', method = '', body = '' } = req || {};
+
+  return {
+    url,
+    method,
+    body,
+    clientToken: cookieValueFromRequest(req, '_sn') || secureheaderFromRequest(req) || '{}',
+    headers: headersFromRequest(req),
+    ip: clientIpFromRequest(req),
+    remoteIp: remoteIpFromRequest(req),
+  };
+};
+
+// extract context from resposne
+const contextFromResponse = (res: any): ResponseContext => {
+  return {
+    status: res?.statusCode || 100,
+    headers: headersFromResponse(res),
+  };
+};
+
+// merge manual and automatic contexts
+const mergeRequestContexts = (manualContext: RequestContext, autoContext: RequestContext): RequestContext => {
+  return {
+    body: manualContext.body || autoContext.body,
+    clientToken: manualContext.clientToken || autoContext.clientToken,
+    headers: { ...autoContext?.headers, ...manualContext?.headers },
+    ip: manualContext.ip || autoContext.ip,
+    method: manualContext.method || autoContext.method,
+    remoteIp: manualContext.remoteIp || autoContext.ip,
+    url: manualContext.url || autoContext.url,
+  };
+};
+
+const delay = (timeout): Promise<void> => new Promise((resolve) => setTimeout(resolve, timeout));
+
+const fromEntries = (iterable) => {
+  return [...iterable].reduce((obj, [key, val]) => {
+    obj[key] = val;
+    return obj;
+  }, {});
+};
+
+const getDeviceFp = (req, options) => {
+  const cookie = cookieValueFromRequest(req, '_sn') || secureheaderFromRequest(req) || '{}';
+  const cookieDecoded = decrypt(cookie, options.apiKey);
+  const clientFP = JSON.parse(cookieDecoded) || {};
+  return clientFP.fp || '';
+};
 
 const promiseTimeout = (promise, ms) => {
   const timeout = new Promise((resolve, reject) => {
     setTimeout(() => {
-      reject('Timed out in ' + ms + 'ms.')
-    }, ms)
+      reject('Timed out in ' + ms + 'ms.');
+    }, ms);
   });
 
   // Returns a race between our timeout and the passed in promise
-  return Promise.race([
-    promise,
-    timeout
-  ]);
-}
+  return Promise.race([promise, timeout]);
+};
 
 function trimKey(key: string): string {
   return key.substring(0, AES_KEY_SIZE);
@@ -129,7 +201,7 @@ function encrypt(plainText, cipherKey: string) {
   try {
     cipherText = cipher.update(plainText, 'utf8', 'hex');
     cipherText += cipher.final('hex');
-    cipherText = iv.toString('hex') + cipherText
+    cipherText = iv.toString('hex') + cipherText;
   } catch (e) {
     cipherText = null;
   }
@@ -147,7 +219,7 @@ function compareVersions(v1: string, v2: string) {
     if (v1[i] > v2[i]) return 1;
     if (v1[i] < v2[i]) return -1;
   }
-  return v1.length == v2.length ? 0 : (v1.length < v2.length ? -1 : 1);
+  return v1.length == v2.length ? 0 : v1.length < v2.length ? -1 : 1;
 }
 
 function toNumber(str, defaultValue: number) {
@@ -155,7 +227,31 @@ function toNumber(str, defaultValue: number) {
 }
 
 function toBoolean(str, defaultValue: boolean) {
-  return (str === "true" || str === "1" || str === "false" || str === "0") ? Boolean(str) : defaultValue;
+  if (str === 'True' || str === 'true' || str === '1') {
+    return true;
+  } else if (str === 'False' || str === 'false' || str === '0') {
+    return false;
+  }
+
+  return defaultValue;
+}
+
+function isEnum<T extends string, TEnumValue extends string>(enumVariable: { [key in T]: TEnumValue }, value: any): boolean {
+  const enumValues = Object.values(enumVariable);
+  return enumValues.includes(value);
+}
+
+function toEnum<T extends string, TEnumValue extends string>(
+  enumVariable: { [key in T]: TEnumValue },
+  value: any,
+  defaultValue: TEnumValue
+): TEnumValue {
+  const enumValues = Object.values(enumVariable);
+  if (enumValues.includes(value)) {
+    return value;
+  }
+  Logger.error(`Unable to parse ${value} as instance of ${enumVariable}, default value: ${defaultValue} will be used`);
+  return defaultValue;
 }
 
 function calculateHash(str: string): string {
@@ -169,21 +265,28 @@ const isModuleExists = (path) => {
   } catch (e) {
     return false;
   }
-}
-
+};
 
 export {
   clientIpFromRequest,
   remoteIpFromRequest,
-  userAgentFromRequest,
-  cookieIdFromRequest,
+  headersFromRequest,
+  cookieValueFromRequest,
   secureheaderFromRequest,
+  getDeviceFp,
   promiseTimeout,
   compareVersions,
   encrypt,
   decrypt,
   toNumber,
   toBoolean,
+  isEnum,
+  toEnum,
+  delay,
+  fromEntries,
   calculateHash,
-  isModuleExists
-}
+  isModuleExists,
+  contextFromRequest,
+  contextFromResponse,
+  mergeRequestContexts,
+};

@@ -1,8 +1,8 @@
-import EventTypes from '../event-types';
+import EventType from '../enums/event-type';
 import IEvent from './event';
 
 export default class AgentLogoutEvent implements IEvent {
-  public eventType = EventTypes.AGENT_LOG_OUT;
+  public eventType = EventType.AGENT_LOG_OUT;
   public ts: number;
 
   constructor() {

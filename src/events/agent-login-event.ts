@@ -1,17 +1,14 @@
 import { type, arch, platform, hostname, cpus, totalmem } from 'os';
-import { getHostIdSync } from '../utils/host-utils';
-import EventTypes from '../event-types';
+import EventType from '../enums/event-type';
 import IEvent from './event';
 import { PackageManager, Package } from '../package-manager';
 import { join } from 'path';
-import { SecureNativeOptions } from '../securenative-options';
-import ModuleManager from '../module-manager';
-import { KeyValuePair } from '../key-value-pair';
+import { KeyValuePair } from '../types/key-value-pair';
 
 const PACKAGE_FILE_NAME = 'package.json';
 
 export default class AgentLoginEvent implements IEvent {
-  public eventType = EventTypes.AGENT_LOG_IN;
+  public eventType = EventType.AGENT_LOG_IN;
   public ts: number;
   public package: {
     name: string;
@@ -50,7 +47,7 @@ export default class AgentLoginEvent implements IEvent {
     path: string;
   };
 
-  constructor(framework: string, frameworkVersion: string, appName: string) {
+  constructor(hostId: string, framework: string, frameworkVersion: string, appName: string) {
     const appPkg: Package = PackageManager.getPackage(join(process.cwd(), PACKAGE_FILE_NAME));
     const agentPkg: Package = PackageManager.getPackage(join(process.cwd(), '/node_modules/@securenative/sdk/', PACKAGE_FILE_NAME));
 
@@ -71,12 +68,12 @@ export default class AgentLoginEvent implements IEvent {
     };
 
     this.runtime = {
-      type: 'nodejs',
+      type: 'node.js',
       version: process.version,
     };
 
     this.os = {
-      hostId: getHostIdSync(),
+      hostId: hostId,
       hostname: hostname(),
       arch: arch(),
       type: type(),
@@ -91,8 +88,8 @@ export default class AgentLoginEvent implements IEvent {
     };
 
     this.agent = {
-      type: "Node.js",
-      version: agentPkg.version,
+      type: "Server Agent",
+      version: agentPkg?.version,
       path: __dirname
     };
 
