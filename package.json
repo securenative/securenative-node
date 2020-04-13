@@ -68,7 +68,7 @@
     "type": "git",
     "url": "https://github.com/securenative/securenative-node.git"
   },
-  "publishConfig": {
+  "release": {
     "access": "public",
     "branches": [
       "refs/tags/*"
