@@ -26,8 +26,8 @@ describe('SecureNative', () => {
     expect(secureNative.agent).to.have.property('startAgent');
     expect(secureNative.agent).to.have.property('stopAgent');
 
-    expect(secureNative).to.have.property('SDK');
-    expect(secureNative.SDK).to.have.property('track');
-    expect(secureNative.SDK).to.have.property('verify');
+    expect(secureNative).to.have.property('sdk');
+    expect(secureNative.sdk).to.have.property('track');
+    expect(secureNative.sdk).to.have.property('verify');
   });
 });

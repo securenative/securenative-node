@@ -48,7 +48,7 @@ if (compareVersions(process.version, config.minSupportedVersion) < 0) {
   secureNative.agent.startAgent().catch(() => { });
 }
 
-const SDK = secureNative.SDK;
+const SDK = secureNative.sdk;
 
 export {
   SDK as secureNative,
