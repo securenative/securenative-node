@@ -1,5 +1,4 @@
 import IEvent from './event';
-import { KeyValuePair } from '../types/key-value-pair';
 import { EventOptions } from '../types/event-options';
 import { decrypt, mergeRequestContexts, contextFromRequest, contextFromResponse } from '../utils/utils';
 import { Logger } from '../logger';
@@ -7,6 +6,7 @@ import { v4 } from 'uuid';
 import { SecureNativeOptions } from '../types/securenative-options';
 import SessionManager from '../session-manager';
 import { IncomingHttpHeaders } from 'http2';
+import { CustomParams } from '../types/custom-params';
 
 export default class SDKEvent implements IEvent {
   public rid: string;
@@ -28,7 +28,7 @@ export default class SDKEvent implements IEvent {
     body: string;
   };
   public ts: number;
-  public params?: Array<KeyValuePair>;
+  public params?: CustomParams;
 
   constructor(event: EventOptions, options: SecureNativeOptions) {
     Logger.debug('Building SDK event');
@@ -62,6 +62,6 @@ export default class SDKEvent implements IEvent {
       headers: reqCtx.headers || {}
     };
     this.ts = event.timestamp || Date.now();
-    this.params = event.params || [];
+    this.params = event.params || {};
   }
 }

@@ -28,7 +28,7 @@ export default class ApiManager {
 
   public track(opts: EventOptions) {
     Logger.debug('Track event call', opts);
-    if (opts && opts.params && opts.params.length > MAX_CUSTOM_PARAMS) {
+    if (opts && opts.params && Object.keys(opts.params).length > MAX_CUSTOM_PARAMS) {
       throw new Error(`You can only specify maximum of ${MAX_CUSTOM_PARAMS} params`);
     }
 

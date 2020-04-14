@@ -1,6 +1,6 @@
 import EventType from '../enums/event-type';
-import { KeyValuePair } from './key-value-pair';
 import { IncomingHttpHeaders } from 'http2';
+import { CustomParams } from './custom-params';
 
 export type Context = {
   clientToken?: string;
@@ -18,5 +18,5 @@ export type EventOptions = {
   };
   context?: Context;
   timestamp?: number;
-  params?: Array<KeyValuePair>;
+  params?: CustomParams;
 };

@@ -1,11 +1,11 @@
 import IEvent from './event';
-import { KeyValuePair } from '../types/key-value-pair';
 import { decrypt } from '../utils/utils';
 import { Logger } from '../logger';
 import { v4 } from 'uuid';
 import { SecureNativeOptions } from '../types/securenative-options';
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http2';
 import { RequestOptions } from '../types/request-options';
+import { CustomParams } from '../types/custom-params';
 
 export default class RequestEvent implements IEvent {
   public rid: string;
@@ -31,7 +31,7 @@ export default class RequestEvent implements IEvent {
     headers: OutgoingHttpHeaders;
   };
   public ts: number;
-  public params?: Array<KeyValuePair>;
+  public params?: CustomParams;
 
   constructor(event: RequestOptions, options: SecureNativeOptions) {
     Logger.debug('Building SDK event');
@@ -70,6 +70,6 @@ export default class RequestEvent implements IEvent {
     };
 
     this.ts = event.timestamp || Date.now();
-    this.params = event.params || [];
+    this.params = event.params || {};
   }
 }

@@ -34,12 +34,9 @@ const sdkEvent: EventOptions = {
       'user-agent': 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405',
     },
   },
-  params: [
-    {
-      key: 'CUSTOM_PARAM',
-      value: 'CUSTOM_PARAM_VALUE',
-    },
-  ],
+  params: {
+    param_1: 'CUSTOM_PARAM_VALUE',
+  },
   timestamp: Date.now(),
 };
 
@@ -77,11 +74,12 @@ describe('ApiManager', () => {
       expect(eventPayload.user).to.have.property('name', sdkEvent.user.name);
       expect(eventPayload.user).to.have.property('email', sdkEvent.user.email);
       //params
-      const [param] = sdkEvent.params;
+
       expect(eventPayload).to.have.property('params');
-      expect(eventPayload.params).to.have.lengthOf(sdkEvent.params.length, 'Incorrect number of params');
-      expect(eventPayload.params.find((p) => p.key == param.key)).to.be.not.null;
-      expect(eventPayload.params.find((p) => p.key == param.key).value).to.be.equal(param.value, 'Invalid param value');
+      expect(Object.keys(eventPayload.params)).to.have.lengthOf(Object.keys(sdkEvent.params).length, 'Incorrect number of params');
+      Object.entries(eventPayload.params).forEach(([key, val]) => {
+        expect(eventPayload.params).to.have.property(key, val, 'Invalid param value');
+      });
       //request context
       expect(eventPayload).to.have.property('request');
       expect(eventPayload.request).to.have.property('ip', sdkEvent.context.ip);
@@ -193,11 +191,11 @@ describe('ApiManager', () => {
       expect(eventPayload.user).to.have.property('name', sdkEvent.user.name);
       expect(eventPayload.user).to.have.property('email', sdkEvent.user.email);
       //params
-      const [param] = sdkEvent.params;
       expect(eventPayload).to.have.property('params');
-      expect(eventPayload.params).to.have.lengthOf(sdkEvent.params.length, 'Incorrect number of params');
-      expect(eventPayload.params.find((p) => p.key == param.key)).to.be.not.null;
-      expect(eventPayload.params.find((p) => p.key == param.key).value).to.be.equal(param.value, 'Invalid param value');
+      expect(Object.keys(eventPayload.params)).to.have.lengthOf(Object.keys(sdkEvent.params).length, 'Incorrect number of params');
+      Object.entries(eventPayload.params).forEach(([key, val]) => {
+        expect(eventPayload.params).to.have.property(key, val, 'Invalid param value');
+      });
       //request context
       expect(eventPayload).to.have.property('request');
       expect(eventPayload.request).to.have.property('ip', sdkEvent.context.ip);
@@ -267,7 +265,7 @@ describe('ApiManager', () => {
       expect(eventPayload.user).to.have.property('email', '');
       //params
       expect(eventPayload).to.have.property('params');
-      expect(eventPayload.params).to.have.lengthOf(0, 'Incorrect number of params');
+      expect(Object.keys(eventPayload.params)).to.have.lengthOf(0, 'Incorrect number of params');
 
       //request context
       expect(eventPayload).to.have.property('request');
