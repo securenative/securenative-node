@@ -23,7 +23,7 @@ if (!config.appName) {
 ConfigurationManager.setConfigKey('hostId', hostId);
 
 const moduleManager = new ModuleManager(appPkg);
-const eventManager = new EventManager(fetch, this.options);
+const eventManager = new EventManager(fetch, config);
 const secureNative = new SecureNative(moduleManager, eventManager, config);
 
 // init logger

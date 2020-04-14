@@ -1,6 +1,6 @@
 {
   "name": "@securenative/sdk",
-  "version": "0.0.0-development",
+  "version": "1.9.3",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,7 +18,7 @@
     "build": "tsc",
     "debug-inspector": "node-debug index.ts --debug-brk",
     "coverage": "codecov",
-    "test": "NODE_ENV=test nyc --reporter=lcov mocha -r ts-node/register src/**/*.spec.ts",
+    "test": "NODE_ENV=test nyc --reporter=lcov mocha -r ts-node/register './src/**/*.spec.ts'",
     "publish": "npm publish --access public",
     "semantic-release": "semantic-release"
   },

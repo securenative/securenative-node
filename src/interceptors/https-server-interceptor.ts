@@ -22,7 +22,7 @@ export default class HttpsServerInterceptor extends Interceptor implements IInte
   }
 
   getModule() {
-    return InterceptionModule.Http;
+    return InterceptionModule.Https;
   }
 
   canExecute(): boolean {

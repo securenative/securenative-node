@@ -14,7 +14,7 @@ export default class SessionManager {
   }
 
   static getSession(id: string): Session {
-    return SessionManager.session.get(id);
+    return SessionManager.session.get(id) || { req: null, res: null };
   }
 
   static setSession(id: string, session: Session) {

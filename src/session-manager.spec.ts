@@ -34,7 +34,7 @@ describe('SessionManager', () => {
 
     sessions.forEach((id) => {
       const session = SessionManager.getSession(id);
-      expect(session).to.be.undefined;
+      expect(session).to.be.eql({ req: null, res: null });
     });
   });
 

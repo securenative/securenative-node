@@ -7,7 +7,7 @@ import { Logger } from '../logger';
 import Hook from 'require-in-the-middle';
 import { wrap } from 'shimmer';
 import ActionsList from './../actions-list';
-import { clientIpFromRequest, contextFromRequest } from './../utils/utils';
+import { clientIpFromRequest, contextFromRequest, contextFromResponse } from './../utils/utils';
 import { SecureNativeOptions } from '../types/securenative-options';
 import { getDeviceFp } from './../utils/utils';
 import SetType from '../enums/set-type';
@@ -95,14 +95,23 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
           const risk = this.apiManager.risk.bind(this);
 
           return function () {
-            if (!this && !this.sn_finished) {
-              intercept(this.req && this.req.sn_uid, 'end');
-              return original.apply(this, arguments);
+            if (this && this.sn_finished) {
+              SessionManager.cleanSession(this.req && this.req.sn_uid);
+              return;
             }
 
-            const context = contextFromRequest(this.req);
-            risk({ eventType: EventType.RISK, context: context });
-            return SessionManager.cleanSession(this.req && this.req.sn_uid);
+            intercept(this.req && this.req.sn_uid, 'end');
+            const { req, res } = SessionManager.getSession(this.req?.sn_uid);
+            if (req && res) {
+              const reqContext = contextFromRequest(req);
+              const resContext = contextFromResponse(res);
+
+              risk({ eventType: EventType.RISK, context: { reqContext, resContext } });
+            }
+
+            SessionManager.cleanSession(this.req && this.req.sn_uid);
+
+            return original.apply(this, arguments);
           };
         });
 
