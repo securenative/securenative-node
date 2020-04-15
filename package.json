@@ -19,7 +19,7 @@
     "debug-inspector": "node-debug index.ts --debug-brk",
     "coverage": "codecov",
     "test": "NODE_ENV=test nyc --reporter=lcov mocha -r ts-node/register './src/**/*.spec.ts'",
-    "publish": "npm publish --access public",
+    "release": "npm publish --access public",
     "semantic-release": "semantic-release"
   },
   "dependencies": {

@@ -26,10 +26,10 @@ jobs:
           scope: '@securenative'
       - name: Install Dependencies
         run: npm install
-      - name: Run Tests
-        run: npm test
       - name: Run Build        
         run: npm run build
+      - name: Run Tests
+        run: npm test
       - name: Create NPMRC        
         run: echo //registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }} > .npmrc       
         env:
