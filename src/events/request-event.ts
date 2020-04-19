@@ -5,7 +5,6 @@ import { v4 } from 'uuid';
 import { SecureNativeOptions } from '../types/securenative-options';
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http2';
 import { RequestOptions } from '../types/request-options';
-import { CustomProperties } from '../types/custom-properties';
 
 export default class RequestEvent implements IEvent {
   public rid: string;
@@ -25,7 +24,7 @@ export default class RequestEvent implements IEvent {
     headers: IncomingHttpHeaders;
     url: string;
     method: string;
-    body: string;
+    body: Object;
   };
   public response: {
     status: number;
@@ -34,15 +33,15 @@ export default class RequestEvent implements IEvent {
   public timestamp: string;
 
   constructor(event: RequestOptions, options: SecureNativeOptions) {
-    Logger.debug('Building SDK event');
-    const decryptedToken = decrypt(event.reqContext?.clientToken, options.apiKey);
+    Logger.debug('Building request event');
+    const reqContext = event.context?.req || {};
+    const resContext = event.context?.res || {};
+    const decryptedToken = decrypt(reqContext?.clientToken, options.apiKey);
     Logger.debug('Decrypted client token', decryptedToken);
     const parsedToken = JSON.parse(decryptedToken) || {};
     Logger.debug('Parsed client token:', parsedToken);
 
     const user: any = {};
-    const reqContext = event.reqContext || {};
-    const resContext = event.resContext || {};
 
     this.rid = v4();
     this.eventType = event.event;

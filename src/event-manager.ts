@@ -38,7 +38,6 @@ export default class EventManager {
     Logger.debug('Attempting to send event', eventOptions);
     try {
       const resp = await this.fetcher(requestUrl, eventOptions);
-
       //special handling to unathorized status
       if (resp.status === 401) {
         Logger.fatal('Unauthorized call to SecureNative API, api key is invalid');

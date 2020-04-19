@@ -16,6 +16,7 @@ import AgentLoginEvent from './events/agent-login-event';
 import AgentLogoutEvent from './events/agent-logout-event';
 import { delay, fromEntries } from './utils/utils';
 import RequestEvent from './events/request-event';
+import { RequestOptions } from './types/request-options';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -265,19 +266,26 @@ describe('ApiManager', () => {
   it('Should call risk event', async () => {
     const options: SecureNativeOptions = {
       apiKey: 'YOUR_API_KEY',
+      autoSend: true,
+      interval: 10,
     };
 
     const fetch = fetchMock.sandbox().mock(`${options.apiUrl}/${ApiRoute.Risk}`, 200);
     const eventManager = new EventManager(fetch, options);
+    eventManager.startEventsPersist();
     const apiManager = new ApiManager(eventManager, options);
 
-    const riskEvent: EventOptions = {
+    const riskEvent: RequestOptions = {
       event: EventType.RISK,
+      context: {},
     };
 
     try {
       // track async event
-      await apiManager.risk(riskEvent);
+      apiManager.risk(riskEvent);
+      
+      // ensure event to be sent
+      await delay(2 * options.interval);
 
       const fetchOptions = fetch.lastOptions();
       const eventPayload: RequestEvent = JSON.parse(fetchOptions.body.toString());
@@ -307,6 +315,7 @@ describe('ApiManager', () => {
       expect(eventPayload.response).to.have.property('headers');
       expect(eventPayload.response).to.have.property('status');
     } finally {
+      eventManager.stopEventsPersist();
       fetch.restore();
     }
   });
@@ -364,7 +373,7 @@ describe('ApiManager', () => {
 
       const fetchOptions = fetch.lastOptions();
       const eventPayload: AgentLoginEvent = JSON.parse(fetchOptions.body.toString());
- 
+
       expect(eventPayload).to.be.not.null;
       //timestamp
       expect(eventPayload).to.have.property('timestamp');

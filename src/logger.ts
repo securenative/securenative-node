@@ -26,7 +26,7 @@ export interface ILogger {
 export class Logger {
   private static log: ILogger;
   static initLogger(options: SecureNativeOptions) {
-    const settings = Object.assign({}, { level: options.logLevel || 'error' }, defaultSettings);
+    const settings = Object.assign({}, defaultSettings, { level: options.logLevel || 'fatal' });
     Logger.log = pino(settings);
   }
 

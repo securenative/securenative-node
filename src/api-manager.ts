@@ -55,25 +55,13 @@ export default class ApiManager {
     }
   }
 
-  public async risk(opts: RequestOptions): Promise<RiskResult> {
+  public risk(opts: RequestOptions) {
     Logger.debug('Risk call', opts);
 
     const requestUrl = `${this.options.apiUrl}/${ApiRoute.Risk}`;
     const event = createEvent(RequestEvent, opts, this.options);
-    try {
-      Logger.debug('Risk event', JSON.stringify(event));
-      const result = await this.eventManager.sendSync<any>(event, requestUrl);
-      const data = decrypt(result.data, this.options.apiKey);
-      Logger.debug('Successfuly performed risk', data);
-      return JSON.parse(data);
-    } catch (ex) {
-      Logger.error('Failed to perform risk call', ex);
-      return {
-        action: ActionType.ALLOW,
-        riskLevel: 'low',
-        score: 0,
-      };
-    }
+    Logger.debug('Risk event', event);
+    this.eventManager.sendAsync(event, requestUrl);
   }
 
   public async heartBeat() {

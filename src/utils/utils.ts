@@ -115,7 +115,7 @@ const contextFromRequest = (req: any): RequestContext => {
   return {
     url,
     method,
-    body,
+    body: JSON.stringify(body),
     clientToken: cookieValueFromRequest(req, '_sn') || secureheaderFromRequest(req) || '{}',
     headers: headersFromRequest(req),
     ip: clientIpFromRequest(req),

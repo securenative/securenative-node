@@ -92,7 +92,7 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
 
         wrap(exports && exports.ServerResponse && exports.ServerResponse.prototype, 'end', (original) => {
           const intercept = super.intercept.bind(this);
-          const risk = this.apiManager.risk.bind(this);
+          const risk = this.apiManager.risk.bind(this.apiManager);
 
           return function () {
             if (this && this.sn_finished) {
@@ -103,10 +103,7 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
             intercept(this.req && this.req.sn_uid, 'end');
             const { req, res } = SessionManager.getSession(this.req?.sn_uid);
             if (req && res) {
-              const reqContext = contextFromRequest(req);
-              const resContext = contextFromResponse(res);
-
-              risk({ eventType: EventType.RISK, context: { reqContext, resContext } });
+              risk({ eventType: EventType.RISK, context: { req: contextFromRequest(req), res: contextFromResponse(res) } });
             }
 
             SessionManager.cleanSession(this.req && this.req.sn_uid);

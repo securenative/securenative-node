@@ -3,7 +3,9 @@ import { RequestContext, ResponseContext } from './request-context';
 
 export type RequestOptions = {
   event: EventType | string;
-  reqContext?: RequestContext;
-  resContext?: ResponseContext;
+  context: {
+    req?: RequestContext;
+    res?: ResponseContext;
+  }
   timestamp?: Date;
 };

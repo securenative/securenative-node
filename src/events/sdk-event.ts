@@ -1,6 +1,6 @@
 import IEvent from './event';
 import { EventOptions } from '../types/event-options';
-import { decrypt, mergeRequestContexts, contextFromRequest, contextFromResponse } from '../utils/utils';
+import { decrypt, mergeRequestContexts, contextFromRequest } from '../utils/utils';
 import { Logger } from '../logger';
 import { v4 } from 'uuid';
 import { SecureNativeOptions } from '../types/securenative-options';
@@ -26,24 +26,23 @@ export default class SDKEvent implements IEvent {
     headers: IncomingHttpHeaders;
     url: string;
     method: string;
-    body: string;
   };
   public timestamp: string;
   public properties?: CustomProperties;
 
   constructor(event: EventOptions, options: SecureNativeOptions) {
     Logger.debug('Building SDK event');
-    const decryptedToken = decrypt(event.context?.clientToken, options.apiKey);
+    // extract info from session
+    const { req } = SessionManager.getLastSession();
+    const reqCtx = mergeRequestContexts(event.context || {}, contextFromRequest(req));
+
+    const decryptedToken = decrypt(reqCtx?.clientToken, options.apiKey);
     Logger.debug('Decrypted client token', decryptedToken);
     const parsedToken = JSON.parse(decryptedToken) || {};
     Logger.debug('Parsed client token:', parsedToken);
 
     const user: any = event.userTraits || {};
 
-    // extract info from session
-    const { req } = SessionManager.getLastSession();
-
-    const reqCtx = mergeRequestContexts(event.context || {}, contextFromRequest(req));
     this.rid = v4();
     this.eventType = event.event;
     this.userId = event.userId || '';
@@ -60,7 +59,6 @@ export default class SDKEvent implements IEvent {
       remoteIp: reqCtx.remoteIp || '',
       method: reqCtx.method || '',
       url: reqCtx.url,
-      body: reqCtx.body || '',
       headers: reqCtx.headers || {},
     };
     this.timestamp = event.timestamp?.toISOString() || new Date().toISOString();
