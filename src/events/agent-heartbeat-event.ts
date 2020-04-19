@@ -9,7 +9,7 @@ const PACKAGE_FILE_NAME = 'package.json';
 
 export default class AgentHeartBeatEvent implements IEvent {
   public eventType = EventType.HEART_BEAT;
-  public ts: number;
+  public timestamp: string;
   private hostId: string;
   private hostname: string;
   private agentVersion: string;
@@ -17,7 +17,7 @@ export default class AgentHeartBeatEvent implements IEvent {
   private static agentPkg: Package = PackageManager.getPackage(join(process.cwd(), '/node_modules/@securenative/sdk/', PACKAGE_FILE_NAME));
 
   constructor(private appName: string) {
-    this.ts = Date.now();
+    this.timestamp = new Date().toISOString();
     this.hostId = getHostIdSync();
     this.hostname = hostname();
     this.agentVersion = AgentHeartBeatEvent.agentPkg?.version;

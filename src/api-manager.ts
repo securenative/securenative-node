@@ -21,15 +21,15 @@ import FailoveStrategy from './enums/failover-strategy';
 import RequestEvent from './events/request-event';
 import { RequestOptions } from './types/request-options';
 
-const MAX_CUSTOM_PARAMS = 6;
+const MAX_CUSTOM_PROPERTIES = 10;
 
 export default class ApiManager {
   constructor(private eventManager: EventManager, private options: SecureNativeOptions) {}
 
   public track(opts: EventOptions) {
     Logger.debug('Track event call', opts);
-    if (opts && opts.params && Object.keys(opts.params).length > MAX_CUSTOM_PARAMS) {
-      throw new Error(`You can only specify maximum of ${MAX_CUSTOM_PARAMS} params`);
+    if (opts && opts.properties && Object.keys(opts.properties).length > MAX_CUSTOM_PROPERTIES) {
+      throw new Error(`You can only specify maximum of ${MAX_CUSTOM_PROPERTIES} custom properties`);
     }
 
     const requestUrl = `${this.options.apiUrl}/${ApiRoute.Track}`;

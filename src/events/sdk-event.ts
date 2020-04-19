@@ -6,15 +6,16 @@ import { v4 } from 'uuid';
 import { SecureNativeOptions } from '../types/securenative-options';
 import SessionManager from '../session-manager';
 import { IncomingHttpHeaders } from 'http2';
-import { CustomParams } from '../types/custom-params';
+import { CustomProperties } from '../types/custom-properties';
 
 export default class SDKEvent implements IEvent {
   public rid: string;
   public eventType: string;
-  public user: {
-    id: string;
+  public userId: string;
+  public userTraits: {
     name: string;
     email: string;
+    createdAt: string;
   };
   public request: {
     cid: string;
@@ -27,8 +28,8 @@ export default class SDKEvent implements IEvent {
     method: string;
     body: string;
   };
-  public ts: number;
-  public params?: CustomParams;
+  public timestamp: string;
+  public properties?: CustomProperties;
 
   constructor(event: EventOptions, options: SecureNativeOptions) {
     Logger.debug('Building SDK event');
@@ -37,18 +38,19 @@ export default class SDKEvent implements IEvent {
     const parsedToken = JSON.parse(decryptedToken) || {};
     Logger.debug('Parsed client token:', parsedToken);
 
-    const user: any = event.user || {};
+    const user: any = event.userTraits || {};
 
     // extract info from session
     const { req } = SessionManager.getLastSession();
 
     const reqCtx = mergeRequestContexts(event.context || {}, contextFromRequest(req));
     this.rid = v4();
-    this.eventType = event.eventType;
-    this.user = {
-      id: user.id || '',
+    this.eventType = event.event;
+    this.userId = event.userId || '';
+    this.userTraits = {
       name: user.name || '',
       email: user.email || '',
+      createdAt: user.createdAt?.toISOString() || new Date(0).toISOString(),
     };
     this.request = {
       cid: parsedToken.cid || '',
@@ -59,9 +61,9 @@ export default class SDKEvent implements IEvent {
       method: reqCtx.method || '',
       url: reqCtx.url,
       body: reqCtx.body || '',
-      headers: reqCtx.headers || {}
+      headers: reqCtx.headers || {},
     };
-    this.ts = event.timestamp || Date.now();
-    this.params = event.params || {};
+    this.timestamp = event.timestamp?.toISOString() || new Date().toISOString();
+    this.properties = event.properties || {};
   }
 }

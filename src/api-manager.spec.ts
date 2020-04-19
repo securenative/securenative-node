@@ -14,16 +14,16 @@ import { v4 } from 'uuid';
 import ModuleManager from './module-manager';
 import AgentLoginEvent from './events/agent-login-event';
 import AgentLogoutEvent from './events/agent-logout-event';
-import { delay } from './utils/utils';
+import { delay, fromEntries } from './utils/utils';
 import RequestEvent from './events/request-event';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 const sdkEvent: EventOptions = {
-  eventType: EventType.LOG_IN,
-  user: {
-    id: 'USER_ID',
+  event: EventType.LOG_IN,
+  userId: 'USER_ID',
+  userTraits: {
     name: 'USER_NAME',
     email: 'USER_EMAIL',
   },
@@ -34,10 +34,12 @@ const sdkEvent: EventOptions = {
       'user-agent': 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405',
     },
   },
-  params: {
-    param_1: 'CUSTOM_PARAM_VALUE',
+  properties: {
+    prop1: 'CUSTOM_PARAM_VALUE',
+    prop2: true,
+    prop3: 3,
   },
-  timestamp: Date.now(),
+  timestamp: new Date(),
 };
 
 describe('ApiManager', () => {
@@ -65,20 +67,20 @@ describe('ApiManager', () => {
 
       expect(eventPayload).to.be.not.null;
       //timestamp
-      expect(eventPayload).to.have.property('ts', sdkEvent.timestamp);
+      expect(eventPayload).to.have.property('timestamp', sdkEvent.timestamp.toISOString());
       //event type
-      expect(eventPayload).to.have.property('eventType', sdkEvent.eventType);
+      expect(eventPayload).to.have.property('eventType', sdkEvent.event);
       //user
-      expect(eventPayload).to.have.property('user');
-      expect(eventPayload.user).to.have.property('id', sdkEvent.user.id);
-      expect(eventPayload.user).to.have.property('name', sdkEvent.user.name);
-      expect(eventPayload.user).to.have.property('email', sdkEvent.user.email);
-      //params
+      expect(eventPayload).to.have.property('userId', sdkEvent.userId);
+      expect(eventPayload).to.have.property('userTraits');
+      expect(eventPayload.userTraits).to.have.property('name', sdkEvent.userTraits.name);
+      expect(eventPayload.userTraits).to.have.property('email', sdkEvent.userTraits.email);
+      //properties
 
-      expect(eventPayload).to.have.property('params');
-      expect(Object.keys(eventPayload.params)).to.have.lengthOf(Object.keys(sdkEvent.params).length, 'Incorrect number of params');
-      Object.entries(eventPayload.params).forEach(([key, val]) => {
-        expect(eventPayload.params).to.have.property(key, val, 'Invalid param value');
+      expect(eventPayload).to.have.property('properties');
+      expect(Object.keys(eventPayload.properties)).to.have.lengthOf(Object.keys(sdkEvent.properties).length, 'Incorrect number of custom properties');
+      Object.entries(eventPayload.properties).forEach(([key, val]) => {
+        expect(eventPayload.properties).to.have.property(key, val, 'Invalid param value');
       });
       //request context
       expect(eventPayload).to.have.property('request');
@@ -92,6 +94,34 @@ describe('ApiManager', () => {
       Object.entries(sdkEvent.context.headers).forEach(([name, value]) => {
         expect(eventPayload.request.headers).to.have.property(name, value, 'Invalid property value');
       });
+    } finally {
+      await eventManager.stopEventsPersist();
+      fetch.restore();
+    }
+  });
+
+  it('Should throw when sending more than 10 custom properties to track event', async () => {
+    const options: SecureNativeOptions = {
+      apiKey: 'YOUR_API_KEY',
+      autoSend: true,
+      interval: 10,
+    };
+
+    const fetch = fetchMock.sandbox().mock(`${options.apiUrl}/${ApiRoute.Track}`, 200);
+    const eventManager = new EventManager(fetch, options);
+    eventManager.startEventsPersist();
+    const apiManager = new ApiManager(eventManager, options);
+
+    const props = fromEntries(Array.from({ length: 11 }, (x, i) => [`prop${i}`, `val${i}`]));
+
+    try {
+      // track async event
+      apiManager.track({
+        event: EventType.LOG_IN,
+        properties: props,
+      });
+    } catch (ex) {
+      expect(ex).to.throw;
     } finally {
       await eventManager.stopEventsPersist();
       fetch.restore();
@@ -182,19 +212,18 @@ describe('ApiManager', () => {
 
       expect(eventPayload).to.be.not.null;
       //timestamp
-      expect(eventPayload).to.have.property('ts', sdkEvent.timestamp);
+      expect(eventPayload).to.have.property('timestamp', sdkEvent.timestamp.toISOString());
       //event type
-      expect(eventPayload).to.have.property('eventType', sdkEvent.eventType);
+      expect(eventPayload).to.have.property('eventType', sdkEvent.event);
       //user
-      expect(eventPayload).to.have.property('user');
-      expect(eventPayload.user).to.have.property('id', sdkEvent.user.id);
-      expect(eventPayload.user).to.have.property('name', sdkEvent.user.name);
-      expect(eventPayload.user).to.have.property('email', sdkEvent.user.email);
-      //params
-      expect(eventPayload).to.have.property('params');
-      expect(Object.keys(eventPayload.params)).to.have.lengthOf(Object.keys(sdkEvent.params).length, 'Incorrect number of params');
-      Object.entries(eventPayload.params).forEach(([key, val]) => {
-        expect(eventPayload.params).to.have.property(key, val, 'Invalid param value');
+      expect(eventPayload).to.have.property('userId', sdkEvent.userId);
+      expect(eventPayload.userTraits).to.have.property('name', sdkEvent.userTraits.name);
+      expect(eventPayload.userTraits).to.have.property('email', sdkEvent.userTraits.email);
+      //properties
+      expect(eventPayload).to.have.property('properties');
+      expect(Object.keys(eventPayload.properties)).to.have.lengthOf(Object.keys(sdkEvent.properties).length, 'Incorrect number of custom properties');
+      Object.entries(eventPayload.properties).forEach(([key, val]) => {
+        expect(eventPayload.properties).to.have.property(key, val, 'Invalid param value');
       });
       //request context
       expect(eventPayload).to.have.property('request');
@@ -243,7 +272,7 @@ describe('ApiManager', () => {
     const apiManager = new ApiManager(eventManager, options);
 
     const riskEvent: EventOptions = {
-      eventType: EventType.RISK,
+      event: EventType.RISK,
     };
 
     try {
@@ -255,17 +284,14 @@ describe('ApiManager', () => {
 
       expect(eventPayload).to.be.not.null;
       //timestamp
-      expect(eventPayload).to.have.property('ts');
+      expect(eventPayload).to.have.property('timestamp');
       //event type
-      expect(eventPayload).to.have.property('eventType', riskEvent.eventType);
+      expect(eventPayload).to.have.property('eventType', riskEvent.event);
       //user
-      expect(eventPayload).to.have.property('user');
-      expect(eventPayload.user).to.have.property('id', '');
-      expect(eventPayload.user).to.have.property('name', '');
-      expect(eventPayload.user).to.have.property('email', '');
-      //params
-      expect(eventPayload).to.have.property('params');
-      expect(Object.keys(eventPayload.params)).to.have.lengthOf(0, 'Incorrect number of params');
+      expect(eventPayload).to.have.property('userId', '');
+      expect(eventPayload).to.have.property('userTraits');
+      expect(eventPayload.userTraits).to.have.property('name', '');
+      expect(eventPayload.userTraits).to.have.property('email', '');
 
       //request context
       expect(eventPayload).to.have.property('request');
@@ -304,8 +330,8 @@ describe('ApiManager', () => {
 
       expect(eventPayload).to.be.not.null;
       //timestamp
-      expect(eventPayload).to.have.property('ts');
-      expect(eventPayload.ts).to.be.greaterThan(0, 'Invalid timestamp');
+      expect(eventPayload).to.have.property('timestamp');
+      expect(eventPayload.timestamp).to.be.not.empty;
       //event type
       expect(eventPayload).to.have.property('eventType', EventType.HEART_BEAT);
       //app name
@@ -338,11 +364,11 @@ describe('ApiManager', () => {
 
       const fetchOptions = fetch.lastOptions();
       const eventPayload: AgentLoginEvent = JSON.parse(fetchOptions.body.toString());
-
+ 
       expect(eventPayload).to.be.not.null;
       //timestamp
-      expect(eventPayload).to.have.property('ts');
-      expect(eventPayload.ts).to.be.greaterThan(0, 'Invalid timestamp');
+      expect(eventPayload).to.have.property('timestamp');
+      expect(eventPayload.timestamp).to.be.not.empty;
       //event type
       expect(eventPayload).to.have.property('eventType', EventType.AGENT_LOG_IN);
       //app name
@@ -380,8 +406,8 @@ describe('ApiManager', () => {
 
       expect(eventPayload).to.be.not.null;
       //timestamp
-      expect(eventPayload).to.have.property('ts');
-      expect(eventPayload.ts).to.be.greaterThan(0, 'Invalid timestamp');
+      expect(eventPayload).to.have.property('timestamp');
+      expect(eventPayload.timestamp).to.be.not.empty;
       //event type
       expect(eventPayload).to.have.property('eventType', EventType.AGENT_LOG_OUT);
     } finally {
@@ -416,8 +442,8 @@ describe('ApiManager', () => {
 
       expect(eventPayload).to.be.not.null;
       //timestamp
-      expect(eventPayload).to.have.property('ts');
-      expect(eventPayload.ts).to.be.greaterThan(0, 'Invalid timestamp');
+      expect(eventPayload).to.have.property('timestamp');
+      expect(eventPayload.timestamp).to.be.not.empty;
       //event type
       expect(eventPayload).to.have.property('eventType', EventType.AGENT_CONFIG);
     } finally {
@@ -449,7 +475,7 @@ describe('ApiManager', () => {
 
       expect(eventPayload).to.be.not.null;
       //timestamp
-      expect(eventPayload).to.have.property('ts');
+      expect(eventPayload).to.have.property('timestamp');
       expect(eventPayload).to.have.property('message', 'Some unexpected error');
       expect(eventPayload).to.have.property('name', 'Error');
       //event type

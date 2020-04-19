@@ -17,7 +17,7 @@ export default class AgentManager {
   private lazyOperation: Promise<any> = Promise.resolve();
   private isAgentStarted: boolean = false;
   private heartBeatManager: HeartBeatManager;
-  private configUpdateTs = 0;
+  private configUpdateTs: number =0;
 
   constructor(
     public moduleManager: ModuleManager,
@@ -67,8 +67,8 @@ export default class AgentManager {
       return;
     }
 
-    if (config.ts > this.configUpdateTs) {
-      this.configUpdateTs = config.ts;
+    if (config.timestamp > this.configUpdateTs) {
+      this.configUpdateTs = config.timestamp;
     }
 
     // enforce all rules

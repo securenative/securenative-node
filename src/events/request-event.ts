@@ -5,15 +5,16 @@ import { v4 } from 'uuid';
 import { SecureNativeOptions } from '../types/securenative-options';
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http2';
 import { RequestOptions } from '../types/request-options';
-import { CustomParams } from '../types/custom-params';
+import { CustomProperties } from '../types/custom-properties';
 
 export default class RequestEvent implements IEvent {
   public rid: string;
   public eventType: string;
-  public user: {
-    id: string;
+  public userId: string;
+  public userTraits: {
     name: string;
     email: string;
+    createdAt: string;
   };
   public request: {
     cid: string;
@@ -30,8 +31,7 @@ export default class RequestEvent implements IEvent {
     status: number;
     headers: OutgoingHttpHeaders;
   };
-  public ts: number;
-  public params?: CustomParams;
+  public timestamp: string;
 
   constructor(event: RequestOptions, options: SecureNativeOptions) {
     Logger.debug('Building SDK event');
@@ -45,11 +45,12 @@ export default class RequestEvent implements IEvent {
     const resContext = event.resContext || {};
 
     this.rid = v4();
-    this.eventType = event.eventType;
-    this.user = {
-      id: user.id || '',
+    this.eventType = event.event;
+    this.userId = user.userId || '';
+    this.userTraits = {
       name: user.name || '',
       email: user.email || '',
+      createdAt: user.createdAt?.toISOString() || new Date(0).toISOString(),
     };
 
     this.request = {
@@ -69,7 +70,6 @@ export default class RequestEvent implements IEvent {
       headers: resContext.headers || {},
     };
 
-    this.ts = event.timestamp || Date.now();
-    this.params = event.params || {};
+    this.timestamp = event.timestamp?.toISOString() || new Date().toISOString();
   }
 }

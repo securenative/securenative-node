@@ -1,6 +1,6 @@
 import EventType from '../enums/event-type';
 import { IncomingHttpHeaders } from 'http2';
-import { CustomParams } from './custom-params';
+import { CustomProperties } from './custom-properties';
 
 export type Context = {
   clientToken?: string;
@@ -10,13 +10,14 @@ export type Context = {
 };
 
 export type EventOptions = {
-  eventType: EventType | string;
-  user?: {
-    id: string;
+  event: EventType | string;
+  userId?: string;
+  userTraits?: {
     name?: string;
     email?: string;
+    createdAt?: Date;
   };
   context?: Context;
-  timestamp?: number;
-  params?: CustomParams;
+  properties?: CustomProperties;
+  timestamp?: Date;
 };

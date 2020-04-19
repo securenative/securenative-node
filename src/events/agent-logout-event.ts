@@ -3,9 +3,9 @@ import IEvent from './event';
 
 export default class AgentLogoutEvent implements IEvent {
   public eventType = EventType.AGENT_LOG_OUT;
-  public ts: number;
+  public timestamp: string;
 
   constructor() {
-    this.ts = Date.now();
+    this.timestamp = new Date().toISOString();
   }
 }

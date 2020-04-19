@@ -11,7 +11,7 @@ const expect = chai.expect;
 
 const event: IEvent = {
   eventType: 'custom-event',
-  ts: Date.now(),
+  timestamp: new Date().toISOString(),
 };
 
 describe('EventManager', () => {
@@ -39,7 +39,7 @@ describe('EventManager', () => {
 
       expect(eventPayload).to.be.not.null;
       //timestamp
-      expect(eventPayload).to.have.property('ts', event.ts);
+      expect(eventPayload).to.have.property('timestamp', event.timestamp);
       //event type
       expect(eventPayload).to.have.property('eventType', event.eventType);
     } finally {
@@ -72,7 +72,7 @@ describe('EventManager', () => {
 
       expect(eventPayload).to.be.not.null;
       //timestamp
-      expect(eventPayload).to.have.property('ts', event.ts);
+      expect(eventPayload).to.have.property('timestamp', event.timestamp);
       //event type
       expect(eventPayload).to.have.property('eventType', event.eventType);
     } finally {
@@ -190,7 +190,7 @@ describe('EventManager', () => {
 
       expect(eventPayload).to.be.not.null;
       //timestamp
-      expect(eventPayload).to.have.property('ts', event.ts);
+      expect(eventPayload).to.have.property('timestamp', event.timestamp);
       //event type
       expect(eventPayload).to.have.property('eventType', event.eventType);
     } finally {
