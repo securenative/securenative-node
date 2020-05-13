@@ -74,7 +74,9 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
             if (this && this.sn_finished) {
               return;
             }
-            intercept(this.req && this.req.sn_uid, 'write');
+            if (arguments.length > 0 && arguments[0] !== undefined) {
+              intercept(this.req && this.req.sn_uid, 'write');
+            }
             return original.apply(this, arguments);
           };
         });
