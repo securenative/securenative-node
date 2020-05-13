@@ -36,11 +36,11 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
 
       Hook([module], (exports, name, basedir) => {
         wrapListener(exports.Server.prototype, 'emit', 'request', (event, req, res) => {
-          const snuid = v4();
-          SessionManager.setSession(snuid, { req, res });
           if (req.method === 'OPTIONS') {
             return true;
           }
+          const snuid = v4();
+          SessionManager.setSession(snuid, { req, res });
           const url = req.url;
           const clientIp = clientIpFromRequest(req);
           const deviceFP = getDeviceFp(req, this.options);

@@ -6,11 +6,11 @@ export interface Session {
 }
 
 export default class SessionManager {
-  private static lastSession = null;
+  private static lastSessionId = '';
   private static session: Map<string, Session> = new Map<string, Session>();
 
   static getLastSession(): Session {
-    return SessionManager.lastSession || { req: null, res: null };
+    return SessionManager.session.get(SessionManager.lastSessionId) || { req: null, res: null };
   }
 
   static getSession(id: string): Session {
@@ -23,7 +23,7 @@ export default class SessionManager {
     SessionManager.session.set(id, session);
 
     //save last session
-    SessionManager.lastSession = session;
+    SessionManager.lastSessionId = id;
   }
 
   static cleanSession(id: string) {
