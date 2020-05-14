@@ -6,31 +6,36 @@ export interface Session {
 }
 
 export default class SessionManager {
-  private static lastSessionId = '';
-  private static session: Map<string, Session> = new Map<string, Session>();
+  private static stack: Array<Session> = [];
 
   static getLastSession(): Session {
-    const session = SessionManager.session.get(SessionManager.lastSessionId) || { req: null, res: null };
-    Logger.debug(`[SessionManager] Getting last session by: ${SessionManager.lastSessionId}, is: ${session.req?.sn_uid}`);
+    const [session = { req: null, res: null }] = SessionManager.stack;
     return session;
   }
 
   static getSession(id: string): Session {
-    return SessionManager.session.get(id) || { req: null, res: null };
+    return SessionManager.stack.find((s) => s.req.sn_uid === id) || { req: null, res: null };
   }
 
   static setSession(id: string, session: Session) {
     Logger.debug(`[SessionManager] Setting session: ${id}`);
     session.req.sn_uid = id;
     session.res.sn_uid = id;
-    SessionManager.session.set(id, session);
-
-    //save last session
-    SessionManager.lastSessionId = id;
+    //add session
+    SessionManager.stack.push(session);
   }
 
   static cleanSession(id: string) {
     Logger.debug(`[SessionManager] Cleaning session: ${id}`);
-    SessionManager.session.delete(id);
+    // delete item
+    const inx = SessionManager.stack.findIndex((s) => s.req.sn_uid === id);
+    if (inx !== -1) {
+      SessionManager.stack.splice(inx, 1);
+    }
+  }
+
+  static cleanAllSessions() {
+    Logger.debug(`[SessionManager] Cleaning all sessions`);
+    SessionManager.stack = [];
   }
 }

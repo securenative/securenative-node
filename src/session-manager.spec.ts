@@ -6,11 +6,16 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 describe('SessionManager', () => {
+  beforeEach(() => {
+    SessionManager.cleanAllSessions();
+  });
+
   it('Should have all public methods defined', () => {
     expect(SessionManager).to.have.property('getLastSession');
     expect(SessionManager).to.have.property('getSession');
     expect(SessionManager).to.have.property('setSession');
     expect(SessionManager).to.have.property('cleanSession');
+    expect(SessionManager).to.have.property('cleanAllSessions');  
   });
 
   it('Should set and get sesssion', () => {
@@ -40,7 +45,7 @@ describe('SessionManager', () => {
 
   it('Should set multiple sessions and get latest session', () => {
     const sessions = ['1111', '2222', '3333', '4444'];
-    const [last] = sessions.slice(-1);
+    const [last] = sessions;
 
     sessions.forEach((id) => {
       SessionManager.setSession(id, { req: {}, res: {} });

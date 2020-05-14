@@ -42,7 +42,7 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
             return true;
           }
           const snuid = v4();
-          Logger.debug(`Url is: ${req.url}, method: ${req.method}`);
+          Logger.debug(`Intercept request: ${req.url}, method: ${req.method}`);
           SessionManager.setSession(snuid, { req, res });
           const url = req.url;
           const clientIp = clientIpFromRequest(req);
@@ -98,7 +98,6 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
           const risk = this.apiManager.risk.bind(this.apiManager);
           return function () {
             if (this && this.sn_finished) {
-              Logger.debug(new Error()?.stack);
               SessionManager.cleanSession(this.req && this.req.sn_uid);
               return;
             }
@@ -109,7 +108,6 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
               if (req && res) {
                 risk({ event: EventType.RISK, context: { req: contextFromRequest(req), res: contextFromResponse(res) } });
               }
-              Logger.debug(new Error().stack);
               SessionManager.cleanSession(this.req.sn_uid);
             }
             return original.apply(this, arguments);
