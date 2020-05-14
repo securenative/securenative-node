@@ -102,14 +102,15 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
               return;
             }
 
-            intercept(this.req && this.req.sn_uid, 'end');
-            const { req, res } = SessionManager.getSession(this.req?.sn_uid);
-            if (req && res) {
-              risk({ event: EventType.RISK, context: { req: contextFromRequest(req), res: contextFromResponse(res) } });
+            if (this.req && this.req.method !== 'OPTIONS') {
+              intercept(this.req.sn_uid, 'end');
+              const { req, res } = SessionManager.getSession(this.req?.sn_uid);
+              if (req && res) {
+                risk({ event: EventType.RISK, context: { req: contextFromRequest(req), res: contextFromResponse(res) } });
+              }
+
+              SessionManager.cleanSession(this.req.sn_uid);
             }
-
-            SessionManager.cleanSession(this.req && this.req.sn_uid);
-
             return original.apply(this, arguments);
           };
         });
