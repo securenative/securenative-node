@@ -98,7 +98,6 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
           const risk = this.apiManager.risk.bind(this.apiManager);
           return function () {
             if (this && this.sn_finished) {
-              Logger.debug(arguments?.callee?.caller.toString());
               Logger.debug(new Error()?.stack);
               SessionManager.cleanSession(this.req && this.req.sn_uid);
               return;
@@ -110,7 +109,6 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
               if (req && res) {
                 risk({ event: EventType.RISK, context: { req: contextFromRequest(req), res: contextFromResponse(res) } });
               }
-              Logger.debug(arguments?.callee?.caller.toString());
               Logger.debug(new Error()?.stack);
               SessionManager.cleanSession(this.req.sn_uid);
             }
