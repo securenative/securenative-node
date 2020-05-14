@@ -74,7 +74,7 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
             if (this && this.sn_finished) {
               return;
             }
-            if (arguments.length > 0 && arguments[0] !== undefined) {
+            if (arguments && arguments.length > 0 && arguments[0] !== undefined) {
               intercept(this.req && this.req.sn_uid, 'write');
             }
             return original.apply(this, arguments);
@@ -105,7 +105,7 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
             intercept(this.req && this.req.sn_uid, 'end');
             const { req, res } = SessionManager.getSession(this.req?.sn_uid);
             if (req && res) {
-              risk({ eventType: EventType.RISK, context: { req: contextFromRequest(req), res: contextFromResponse(res) } });
+              risk({ event: EventType.RISK, context: { req: contextFromRequest(req), res: contextFromResponse(res) } });
             }
 
             SessionManager.cleanSession(this.req && this.req.sn_uid);

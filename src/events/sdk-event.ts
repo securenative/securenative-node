@@ -34,6 +34,9 @@ export default class SDKEvent implements IEvent {
     Logger.debug('Building SDK event');
     // extract info from session
     const { req } = SessionManager.getLastSession();
+    if (!req) {
+      Logger.debug('request is empty', req);
+    }
     const reqCtx = mergeRequestContexts(event.context || {}, contextFromRequest(req));
 
     const decryptedToken = decrypt(reqCtx?.clientToken, options.apiKey);
@@ -42,7 +45,6 @@ export default class SDKEvent implements IEvent {
     Logger.debug('Parsed client token:', parsedToken);
 
     const user: any = event.userTraits || {};
-
     this.rid = v4();
     this.eventType = event.event;
     this.userId = event.userId || '';

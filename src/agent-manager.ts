@@ -107,12 +107,12 @@ export default class AgentManager {
             //start hgeart beats
             this.heartBeatManager = new HeartBeatManager(this.options.heartBeatInterval, this.apiManager.heartBeat.bind(this));
             this.heartBeatManager.startHeartBeatLoop();
-            this.configurationUpdate.call(this);
-
             this.eventManager.setSessionId(data.sessionId);
             this.eventManager.startEventsPersist();
             this.isAgentStarted = true;
-
+            
+            //schedual config update
+            this.configurationUpdate.call(this);
             Logger.debug('Agent successfuly started!');
             return resolve(true);
           } else {
