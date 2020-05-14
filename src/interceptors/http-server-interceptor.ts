@@ -109,7 +109,7 @@ export default class HttpServerInterceptor extends Interceptor implements IInter
               if (req && res) {
                 risk({ event: EventType.RISK, context: { req: contextFromRequest(req), res: contextFromResponse(res) } });
               }
-              Logger.debug(new Error()?.stack);
+              Logger.debug(new Error().stack);
               SessionManager.cleanSession(this.req.sn_uid);
             }
             return original.apply(this, arguments);
