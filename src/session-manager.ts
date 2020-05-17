@@ -1,5 +1,7 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { Logger } from './logger';
+import { createNamespace, Namespace } from 'cls-hooked';
+
 export interface Session {
   req: IncomingMessage | any;
   res: ServerResponse | any;
@@ -7,7 +9,7 @@ export interface Session {
 
 export default class SessionManager {
   private static stack: Array<Session> = [];
-
+  private static ns = createNamespace('sn_session');
   static getLastSession(): Session {
     const [session = { req: null, res: null }] = SessionManager.stack;
     return session;
@@ -37,5 +39,9 @@ export default class SessionManager {
   static cleanAllSessions() {
     Logger.debug(`[SessionManager] Cleaning all sessions`);
     SessionManager.stack = [];
+  }
+
+  static getNs(): Namespace {
+    return SessionManager.ns;
   }
 }

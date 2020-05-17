@@ -32,13 +32,13 @@ export default class SDKEvent implements IEvent {
 
   constructor(event: EventOptions, options: SecureNativeOptions) {
     Logger.debug('Building SDK event');
+
     // extract info from session
-    const { req } = SessionManager.getLastSession();
+    const req  = SessionManager.getNs().get('req');
     if (!req) {
       Logger.debug('request is empty', req);
     }
     const reqCtx = mergeRequestContexts(event.context || {}, contextFromRequest(req));
-
     const decryptedToken = decrypt(reqCtx?.clientToken, options.apiKey);
     Logger.debug('Decrypted client token', decryptedToken);
     const parsedToken = JSON.parse(decryptedToken) || {};
