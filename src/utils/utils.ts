@@ -4,7 +4,7 @@ import { createDecipheriv, randomBytes, createCipheriv } from 'crypto';
 import { createHash } from 'crypto';
 import { KeyValuePair } from '../types/key-value-pair';
 import { Logger } from '../logger';
-import { RequestContext, ResponseContext } from '../types/request-context';
+import { RequestContext } from '../types/request-context';
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http2';
 
 const ALGORITHM = 'aes-256-cbc';
@@ -120,14 +120,6 @@ const contextFromRequest = (req: any): RequestContext => {
     headers: headersFromRequest(req),
     ip: clientIpFromRequest(req),
     remoteIp: remoteIpFromRequest(req),
-  };
-};
-
-// extract context from resposne
-const contextFromResponse = (res: any): ResponseContext => {
-  return {
-    status: res?.statusCode || 100,
-    headers: headersFromResponse(res),
   };
 };
 
@@ -287,6 +279,5 @@ export {
   calculateHash,
   isModuleExists,
   contextFromRequest,
-  contextFromResponse,
   mergeRequestContexts,
 };

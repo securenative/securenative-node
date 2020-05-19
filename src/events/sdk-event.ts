@@ -1,10 +1,9 @@
 import IEvent from './event';
 import { EventOptions } from '../types/event-options';
-import { decrypt, mergeRequestContexts, contextFromRequest } from '../utils/utils';
+import { decrypt } from '../utils/utils';
 import { Logger } from '../logger';
 import { v4 } from 'uuid';
 import { SecureNativeOptions } from '../types/securenative-options';
-import SessionManager from '../session-manager';
 import { IncomingHttpHeaders } from 'http2';
 import { CustomProperties } from '../types/custom-properties';
 
@@ -33,13 +32,7 @@ export default class SDKEvent implements IEvent {
   constructor(event: EventOptions, options: SecureNativeOptions) {
     Logger.debug('Building SDK event');
 
-    // extract info from session
-    const req  = SessionManager.getNs().get('req');
-    if (!req) {
-      Logger.debug('request is empty', req);
-    }
-    const reqCtx = mergeRequestContexts(event.context || {}, contextFromRequest(req));
-    const decryptedToken = decrypt(reqCtx?.clientToken, options.apiKey);
+    const decryptedToken = decrypt(event.context?.clientToken, options.apiKey);
     Logger.debug('Decrypted client token', decryptedToken);
     const parsedToken = JSON.parse(decryptedToken) || {};
     Logger.debug('Parsed client token:', parsedToken);
@@ -57,11 +50,11 @@ export default class SDKEvent implements IEvent {
       cid: parsedToken.cid || '',
       vid: parsedToken.vid || '',
       fp: parsedToken.fp || '',
-      ip: reqCtx.ip || '',
-      remoteIp: reqCtx.remoteIp || '',
-      method: reqCtx.method || '',
-      url: reqCtx.url,
-      headers: reqCtx.headers || {},
+      ip: event.context.ip || '',
+      remoteIp: event.context.remoteIp || '',
+      method: event.context.method || '',
+      url: event.context.url,
+      headers: event.context.headers || {},
     };
     this.timestamp = event.timestamp?.toISOString() || new Date().toISOString();
     this.properties = event.properties || {};

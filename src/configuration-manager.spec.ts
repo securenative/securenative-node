@@ -18,7 +18,6 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_APP_NAME: 'SOME_APP_NAME',
       SECURENATIVE_API_URL: 'SOME_API_URL',
       SECURENATIVE_INTERVAL: 1000,
-      SECURENATIVE_HEARTBEAT_INTERVAL: 5000,
       SECURENATIVE_MAX_EVENTS: 100,
       SECURENATIVE_TIMEOUT: 1500,
       SECURENATIVE_AUTO_SEND: true,
@@ -38,7 +37,6 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('autoSend', true);
     expect(options).to.have.property('disable', false);
     expect(options).to.have.property('failoverStrategy', 'fail-closed');
-    expect(options).to.have.property('heartBeatInterval', 5000);
     expect(options).to.have.property('interval', 1000);
     expect(options).to.have.property('logLevel', 'fatal');
     expect(options).to.have.property('maxEvents', 100);
@@ -126,7 +124,6 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('autoSend', true);
     expect(options).to.have.property('disable', false);
     expect(options).to.have.property('failoverStrategy', 'fail-open');
-    expect(options).to.have.property('heartBeatInterval', 300000);
     expect(options).to.have.property('interval', 1000);
     expect(options).to.have.property('logLevel', 'fatal');
     expect(options).to.have.property('maxEvents', 1000);
@@ -140,7 +137,6 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_APP_NAME: 'SOME_APP_NAME',
       SECURENATIVE_API_URL: 'SOME_API_URL',
       SECURENATIVE_INTERVAL: 1000,
-      SECURENATIVE_HEARTBEAT_INTERVAL: 5000,
       SECURENATIVE_MAX_EVENTS: 100,
       SECURENATIVE_TIMEOUT: 1500,
       SECURENATIVE_AUTO_SEND: true,
@@ -163,7 +159,6 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('autoSend', config.SECURENATIVE_AUTO_SEND);
     expect(options).to.have.property('disable', config.SECURENATIVE_DISABLE);
     expect(options).to.have.property('failoverStrategy', config.SECURENATIVE_FAILOVER_STRATEGY);
-    expect(options).to.have.property('heartBeatInterval', config.SECURENATIVE_HEARTBEAT_INTERVAL);
     expect(options).to.have.property('interval', config.SECURENATIVE_INTERVAL);
     expect(options).to.have.property('logLevel', config.SECURENATIVE_LOG_LEVEL);
     expect(options).to.have.property('maxEvents', config.SECURENATIVE_MAX_EVENTS);
@@ -179,7 +174,6 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_APP_NAME: 'SOME_APP_NAME',
       SECURENATIVE_API_URL: 'SOME_API_URL',
       SECURENATIVE_INTERVAL: 1000,
-      SECURENATIVE_HEARTBEAT_INTERVAL: 5000,
       SECURENATIVE_MAX_EVENTS: 100,
       SECURENATIVE_TIMEOUT: 1500,
       SECURENATIVE_AUTO_SEND: true,
@@ -202,7 +196,6 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('autoSend', true);
     expect(options).to.have.property('disable', false);
     expect(options).to.have.property('failoverStrategy', 'fail-closed');
-    expect(options).to.have.property('heartBeatInterval', 5000);
     expect(options).to.have.property('interval', 1000);
     expect(options).to.have.property('logLevel', 'fatal');
     expect(options).to.have.property('maxEvents', 100);
@@ -218,7 +211,6 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_APP_NAME: 'APP_NAME_FROM_FILE',
       SECURENATIVE_API_URL: 'API_URL_FROM_FILE',
       SECURENATIVE_INTERVAL: 1000,
-      SECURENATIVE_HEARTBEAT_INTERVAL: 5000,
       SECURENATIVE_MAX_EVENTS: 100,
       SECURENATIVE_TIMEOUT: 1500,
       SECURENATIVE_AUTO_SEND: false,
@@ -232,7 +224,6 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_APP_NAME: 'APP_NAME_ENV',
       SECURENATIVE_API_URL: 'API_URL_ENV',
       SECURENATIVE_INTERVAL: 2000,
-      SECURENATIVE_HEARTBEAT_INTERVAL: 10000,
       SECURENATIVE_MAX_EVENTS: 200,
       SECURENATIVE_TIMEOUT: 3000,
       SECURENATIVE_AUTO_SEND: true,
@@ -258,7 +249,6 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('autoSend', fileConfig.SECURENATIVE_AUTO_SEND);
     expect(options).to.have.property('disable', fileConfig.SECURENATIVE_DISABLE);
     expect(options).to.have.property('failoverStrategy', fileConfig.SECURENATIVE_FAILOVER_STRATEGY);
-    expect(options).to.have.property('heartBeatInterval', fileConfig.SECURENATIVE_HEARTBEAT_INTERVAL);
     expect(options).to.have.property('interval', fileConfig.SECURENATIVE_INTERVAL);
     expect(options).to.have.property('logLevel', fileConfig.SECURENATIVE_LOG_LEVEL);
     expect(options).to.have.property('maxEvents', fileConfig.SECURENATIVE_MAX_EVENTS);

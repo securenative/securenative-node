@@ -1,13 +1,6 @@
 import EventType from '../enums/event-type';
-import { IncomingHttpHeaders } from 'http2';
 import { CustomProperties } from './custom-properties';
-
-export type Context = {
-  clientToken?: string;
-  ip?: string;
-  remoteIp?: string;
-  headers?: IncomingHttpHeaders;
-};
+import { RequestContext } from './request-context';
 
 export type EventOptions = {
   event: EventType | string;
@@ -17,7 +10,7 @@ export type EventOptions = {
     email?: string;
     createdAt?: Date;
   };
-  context?: Context;
+  context?: RequestContext;
   properties?: CustomProperties;
   timestamp?: Date;
 };

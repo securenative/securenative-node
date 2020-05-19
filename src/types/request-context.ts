@@ -1,4 +1,4 @@
-import { IncomingHttpHeaders, OutgoingHttpHeaders } from "http2";
+import { IncomingHttpHeaders } from "http2";
 
 export type RequestContext = {
   clientToken?: string;
@@ -8,9 +8,4 @@ export type RequestContext = {
   url?: string;
   method?: string;
   body?: string;
-};
-
-export type ResponseContext = {
-  status?: number;
-  headers?: OutgoingHttpHeaders;
 };
