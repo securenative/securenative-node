@@ -7,24 +7,35 @@ import { Logger } from './logger';
 import { PackageManager, Package } from './package-manager';
 import ConfigurationManager from './configuration-manager';
 import { join } from 'path';
+import ModuleManager from './module-manager';
+import { IMiddleware } from './middleware/middleware';
+import { createMiddleware } from './middleware/midlleware-factory';
 
 const PACKAGE_FILE_NAME = 'package.json';
 
 export default class SecureNative {
   private apiManager: ApiManager;
-  private static instance = null;
+  public middleware: IMiddleware;
+  private static instance: SecureNative;
 
-  private constructor(eventManager: EventManager, options: SecureNativeOptions) {
-    if (!eventManager || !options) {
+  private constructor(eventManager: EventManager, moduleManager: ModuleManager, private options: SecureNativeOptions) {
+    if (!eventManager || !moduleManager || !options) {
       throw new Error('Unable to create SecureNative instance, invalid config provided');
     }
+
+    if (!options.disable) {
+      // create middleware
+      this.middleware = createMiddleware(moduleManager, options);
+      this.middleware.verifyWebhook = this.middleware.verifyWebhook.bind(this.middleware);
+    }
+
     this.apiManager = new ApiManager(eventManager, options);
   }
 
   public static init(options: SecureNativeOptions) {
     const defaultOptions = ConfigurationManager.getConfig();
     const config: SecureNativeOptions = { ...options, ...defaultOptions };
-    
+
     const eventManager = new EventManager(fetch, config);
     SecureNative.initialize(eventManager, config);
   }
@@ -33,18 +44,23 @@ export default class SecureNative {
     if (SecureNative.instance) {
       throw new Error('This SDK was already initialized');
     }
-
+    
     const appPkg: Package = PackageManager.getPackage(join(process.cwd(), PACKAGE_FILE_NAME));
     // set default app name
     if (!options.appName) {
       ConfigurationManager.setConfigKey('appName', appPkg.name);
     }
 
+    // create moduleManager
+    const moduleManager = new ModuleManager(appPkg);
+
     // init logger
     Logger.initLogger(options);
     Logger.debug('Loaded Configurations', JSON.stringify(options));
 
-    SecureNative.instance = new SecureNative(eventManager, options);
+    const secureNative = new SecureNative(eventManager, moduleManager, options);
+
+    SecureNative.instance = secureNative;
   }
 
   public static getInstance(): SecureNative {
