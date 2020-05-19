@@ -144,7 +144,7 @@ secureNative.track({
 | SECURENATIVE_TIMEOUT            | number  | true     | 1500                                      | API call timeout in ms                            |
 | SECURENATIVE_AUTO_SEND          | Boolean | true     | true                                      | Should api auto send the events                   |
 | SECURENATIVE_DISABLE            | Boolean | true     | true                                      | Allow to disable agent functionality              |
-| SECURENATIVE_DEBUG_MODE         | Boolean | true     | false                                     | Displays debug info to stdout                     |
+| SECURENATIVE_LOG_LEVEL          | string | true     | fatal                                     | Displays debug info to stdout                     |
 
 ## Compatibility
 
