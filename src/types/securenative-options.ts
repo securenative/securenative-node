@@ -1,4 +1,4 @@
-import FailoveStrategy from "../enums/failover-strategy";
+import FailoveStrategy from '../enums/failover-strategy';
 
 export type SecureNativeOptions = {
   apiKey?: string;
@@ -12,4 +12,4 @@ export type SecureNativeOptions = {
   logLevel?: string;
   failoverStrategy?: FailoveStrategy;
   minSupportedVersion?: string;
-}
+};

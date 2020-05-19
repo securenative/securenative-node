@@ -27,31 +27,30 @@
 </p>
 <hr/>
 
-SecureNative Node.JS agent provides application security monitoring and protection from OWASP TOP 10 security threats at run-time through dynamic instrumentation of business logic and user behaviour.
+[SecureNative](https://www.securenative.com/) performs user monitoring by analyzing user interactions with your application and various factors such as network, devices, locations and access patterns to stop and prevent account takeover attacks.
 
-SecureNative monitors and protects applications from common security threats such as:
+## Install the SDK
 
-- Bad bots
-- 3rd party packages vulnerabilities
-- SQL/NoSQL injections
-- XSS attacks
-- Massive security scans
-- Raise of HTTP errors (40X, 50X)
-- Anomaly Usage
-- Content Scrapping
-- Adaptive Authentication, prevent ATO (Account Takeover)
-
-## Installation
-
-Please create free account at [register](https://console.securenative.com/register) to get api key.
-
-Install SecureNative agent:
+Navigate to your application project folder and enter:
 
 ```bash
-npm i @securenative/agent
+npm i @securenative/sdk
 ```
 
-Verify that `@securenative/agent` appears in your package to your `package.json`.
+Verify that `@securenative/sdk` appears in your package to your `package.json`.
+
+## Initialize the SDK
+
+To get your *API KEY*, login to your SecureNative account and go to project settings page:
+
+```js
+import { SecureNative, EventTypes } from "@securenative/sdk";
+or;
+const { SecureNative, EventTypes } = require("@securenative/sdk"); // if your using ES5
+``` 
+
+### Option 1: Initialize via Config file
+SecureNative can automatically load your config from *securenative.json* that you can add to your application folder.
 
 ```shell script
 cat > securenative.json <<EOF
@@ -62,10 +61,75 @@ cat > securenative.json <<EOF
 EOF
 ```
 
-Add SecureNative as first dependency to your main module
+### Option 2: Initialize via config options
+
+```java
+SecureNative.init({ apiKey: "Your API_KEY" });
+```
+
+## Getting SecureNative instance
+Once initialized, sdk will create a singleton instance which you can get: 
+```java
+const secureNative = SecureNative.getInstance();
+```
+
+## Tracking events
+
+Once the SDK has been initialized, tracking requests sent through the SDK
+instance. Make sure you build event with the EventBuilder:
+
 
 ```js
-require('securenative');
+import { SecureNative, EventTypes, contextFromRequest } from "@securenative/sdk";
+
+secureNative.track({
+  event: EventTypes.LOG_IN,
+  userId: '1234',
+  userTraits: {
+    name: 'Your Name',
+    email: 'name@gmail.com'
+  },
+  context: contextFromRequest(req)
+});
+``` 
+
+If you don't have acess to request object you can construct the context manually:
+
+```js
+secureNative.track({
+  event: EventTypes.LOG_IN,
+  userId: '1234',
+  userTraits: {
+    name: 'Your Name',
+    email: 'name@gmail.com'
+  },
+  context: {
+    ip: '10.0.0.0',
+    clientToken: 'Token from client',
+    headers: {
+      "user-agent": 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405"'
+    }
+  }
+});
+``` 
+
+## Verify events
+```js
+
+  const verifyResult = await secureNative.verify({
+    event: EventTypes.LOG_IN,
+    userId: '1234',
+    userTraits: {
+      name: 'Your Name',
+      email: 'name@gmail.com'
+    },
+    context: contextFromRequest(req)
+  })
+
+  verifyResult.riskLevel // Low, Medium, High
+  verifyResult.score  // Risk score: 0 -1 (0 - Very Low, 1 - Very High)
+  verifyResult.triggers // ["TOR", "New IP", "New City"]
+}
 ```
 
 ## Configuration
@@ -75,8 +139,7 @@ require('securenative');
 | SECURENATIVE_API_KEY            | string  | false    | none                                      | SecureNative api key                              |
 | SECURENATIVE_APP_NAME           | string  | false    | package.json                              | Name of application source                        |
 | SECURENATIVE_API_URL            | string  | true     | https://api.securenative.com/v1/collector | Default api base address                          |
-| SECURENATIVE_INTERVAL           | number  | true     | 1000                                      | Default interval for SDK to try to persist events |
-| SECURENATIVE_HEARTBEAT_INTERVAL | number  | true     | 1000                                      | Default agent hearbeat interval                   |
+| SECURENATIVE_INTERVAL           | number  | true     | 1000                                      | Default interval for SDK to try to persist events |                |
 | SECURENATIVE_MAX_EVENTS         | number  | true     | 1000                                      | Max in-memory events queue                        |
 | SECURENATIVE_TIMEOUT            | number  | true     | 1500                                      | API call timeout in ms                            |
 | SECURENATIVE_AUTO_SEND          | Boolean | true     | true                                      | Should api auto send the events                   |

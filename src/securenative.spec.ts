@@ -10,7 +10,7 @@ const expect = chai.expect;
 
 describe('SecureNative', () => {
   it('Should fail to create new instance when params are null', () => {
-    expect(() => new SecureNative(null, null)).to.throw('Unable to create SecureNative instance, invalid config provided');
+    expect(() => SecureNative.getInstance()).to.throw('You need to init sdk first!');
   });
 
   it('Should have all public methods defined', () => {
@@ -18,8 +18,9 @@ describe('SecureNative', () => {
     config.disable = true;
     const fetcher = fetchMock.sandbox().post('*', 200);
     const eventManager = new EventManager(fetcher, config);
-    const secureNative = new SecureNative(eventManager, config);
-
+    SecureNative.initialize(eventManager, config);
+    const secureNative = SecureNative.getInstance();
+    
     expect(secureNative).to.have.property('track');
     expect(secureNative).to.have.property('verify');
   });
