@@ -35,10 +35,10 @@ export default class SecureNative {
 
   public static init(options: SecureNativeOptions) {
     const defaultOptions = ConfigurationManager.getConfig();
-    const config: SecureNativeOptions = { ...options, ...defaultOptions };
+    const config: SecureNativeOptions = { ...defaultOptions, ...options };
 
     const eventManager = new EventManager(fetch, config);
-    if (options.autoSend) {
+    if (config.autoSend) {
       eventManager.startEventsPersist();
     }
     SecureNative.initialize(eventManager, config);
@@ -48,7 +48,7 @@ export default class SecureNative {
     if (SecureNative.instance) {
       throw new Error('This SDK was already initialized');
     }
-    
+
     const appPkg: Package = PackageManager.getPackage(join(process.cwd(), PACKAGE_FILE_NAME));
     // set default app name
     if (!options.appName) {

@@ -1,7 +1,7 @@
 import IEvent from './events/event';
 import { SecureNativeOptions } from './types/securenative-options';
 import { FetchOptions } from './types/fetch-options';
-import { promiseTimeout } from './utils/utils';
+import { promiseTimeout, getSDKVersion } from './utils/utils';
 import { Logger } from './logger';
 
 export default class EventManager {
@@ -10,12 +10,16 @@ export default class EventManager {
   private sendEnabled: Boolean = false;
   private timeoutId = null;
 
+  
   constructor(private fetcher: any, private options: SecureNativeOptions) {
+    
     this.defaultFetchOptions = {
       url: options.apiUrl,
       options: {
         method: 'post',
         headers: {
+          'SN-Version' : getSDKVersion(),
+          'User-Agent' : 'SecureNative-node.js',
           Authorization: this.options.apiKey,
         },
       },

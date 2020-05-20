@@ -6,11 +6,14 @@ import { KeyValuePair } from '../types/key-value-pair';
 import { Logger } from '../logger';
 import { RequestContext } from '../types/request-context';
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http2';
+import { PackageManager } from '../package-manager';
+import { join } from 'path';
 
 const ALGORITHM = 'aes-256-cbc';
 const BLOCK_SIZE = 16;
 const AES_KEY_SIZE = 32;
 const ipHeaders = ['x-forwarded-for', 'x-client-ip', 'x-real-ip', 'x-forwarded', 'x-cluster-client-ip', 'forwarded-for', 'forwarded', 'via'];
+const PACKAGE_FILE_NAME = 'package.json';
 
 const clientIpFromRequest = (req: any) => {
   if (!req) {
@@ -259,6 +262,11 @@ const isModuleExists = (path) => {
   }
 };
 
+const getSDKVersion = () => {
+  const agentPkg = PackageManager.getPackage(join(process.cwd(), '/node_modules/@securenative/agent/', PACKAGE_FILE_NAME));
+  return agentPkg.version;
+};
+
 export {
   clientIpFromRequest,
   remoteIpFromRequest,
@@ -280,4 +288,5 @@ export {
   isModuleExists,
   contextFromRequest,
   mergeRequestContexts,
+  getSDKVersion,
 };
