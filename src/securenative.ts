@@ -10,6 +10,7 @@ import { join } from 'path';
 import ModuleManager from './module-manager';
 import { IMiddleware } from './middleware/middleware';
 import { createMiddleware } from './middleware/midlleware-factory';
+import fetch from 'node-fetch';
 
 const PACKAGE_FILE_NAME = 'package.json';
 
