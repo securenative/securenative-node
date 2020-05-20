@@ -264,7 +264,7 @@ const isModuleExists = (path) => {
 
 const getSDKVersion = () => {
   const agentPkg = PackageManager.getPackage(join(process.cwd(), '/node_modules/@securenative/agent/', PACKAGE_FILE_NAME));
-  return agentPkg.version;
+  return agentPkg && agentPkg.version || 'unknown';
 };
 
 export {
