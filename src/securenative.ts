@@ -38,6 +38,9 @@ export default class SecureNative {
     const config: SecureNativeOptions = { ...options, ...defaultOptions };
 
     const eventManager = new EventManager(fetch, config);
+    if (options.autoSend) {
+      eventManager.startEventsPersist();
+    }
     SecureNative.initialize(eventManager, config);
   }
 
