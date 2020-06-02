@@ -32,7 +32,8 @@ export default class SDKEvent implements IEvent {
   constructor(event: EventOptions, options: SecureNativeOptions) {
     Logger.debug('Building SDK event');
 
-    const decryptedToken = decrypt(event.context?.clientToken, options.apiKey);
+    const context = event.context || {};
+    const decryptedToken = decrypt(context?.clientToken, options.apiKey);
     Logger.debug('Decrypted client token', decryptedToken);
     const parsedToken = JSON.parse(decryptedToken) || {};
     Logger.debug('Parsed client token:', parsedToken);
@@ -50,11 +51,11 @@ export default class SDKEvent implements IEvent {
       cid: parsedToken.cid || '',
       vid: parsedToken.vid || '',
       fp: parsedToken.fp || '',
-      ip: event.context.ip || '',
-      remoteIp: event.context.remoteIp || '',
-      method: event.context.method || '',
-      url: event.context.url,
-      headers: event.context.headers || {},
+      ip: context.ip || '',
+      remoteIp: context.remoteIp || '',
+      method: context.method || '',
+      url: context.url,
+      headers: context.headers || {},
     };
     this.timestamp = event.timestamp?.toISOString() || new Date().toISOString();
     this.properties = event.properties || {};
