@@ -87,7 +87,8 @@ secureNative.track({
   userId: '1234',
   userTraits: {
     name: 'Your Name',
-    email: 'name@gmail.com'
+    email: 'name@gmail.com',
+    phone: '+1234567890'
   },
   context: contextFromRequest(req)
 });
@@ -101,7 +102,8 @@ secureNative.track({
   userId: '1234',
   userTraits: {
     name: 'Your Name',
-    email: 'name@gmail.com'
+    email: 'name@gmail.com',
+    phone: '+1234567890'
   },
   context: {
     ip: '10.0.0.0',
@@ -121,7 +123,8 @@ secureNative.track({
     userId: '1234',
     userTraits: {
       name: 'Your Name',
-      email: 'name@gmail.com'
+      email: 'name@gmail.com',
+      phone: '+1234567890'
     },
     context: contextFromRequest(req)
   })

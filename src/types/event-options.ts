@@ -8,6 +8,7 @@ export type EventOptions = {
   userTraits?: {
     name?: string;
     email?: string;
+    phone?: string;
     createdAt?: Date;
   };
   context?: RequestContext;

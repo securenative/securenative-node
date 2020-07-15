@@ -20,6 +20,7 @@ const sdkEvent: EventOptions = {
   userTraits: {
     name: 'USER_NAME',
     email: 'USER_EMAIL',
+    phone: '+123456789',
   },
   context: {
     ip: '127.0.0.1',
@@ -69,6 +70,7 @@ describe('ApiManager', () => {
       expect(eventPayload).to.have.property('userTraits');
       expect(eventPayload.userTraits).to.have.property('name', sdkEvent.userTraits.name);
       expect(eventPayload.userTraits).to.have.property('email', sdkEvent.userTraits.email);
+      expect(eventPayload.userTraits).to.have.property('phone', sdkEvent.userTraits.phone);
       //properties
 
       expect(eventPayload).to.have.property('properties');
@@ -213,6 +215,7 @@ describe('ApiManager', () => {
       expect(eventPayload).to.have.property('userId', sdkEvent.userId);
       expect(eventPayload.userTraits).to.have.property('name', sdkEvent.userTraits.name);
       expect(eventPayload.userTraits).to.have.property('email', sdkEvent.userTraits.email);
+      expect(eventPayload.userTraits).to.have.property('phone', sdkEvent.userTraits.phone);
       //properties
       expect(eventPayload).to.have.property('properties');
       expect(Object.keys(eventPayload.properties)).to.have.lengthOf(Object.keys(sdkEvent.properties).length, 'Incorrect number of custom properties');
