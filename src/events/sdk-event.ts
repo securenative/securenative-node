@@ -14,6 +14,7 @@ export default class SDKEvent implements IEvent {
   public userTraits: {
     name: string;
     email: string;
+    phone: string;
     createdAt: string;
   };
   public request: {
@@ -45,6 +46,7 @@ export default class SDKEvent implements IEvent {
     this.userTraits = {
       name: user.name || '',
       email: user.email || '',
+      phone: user.phone || '',
       createdAt: user.createdAt?.toISOString() || new Date(0).toISOString(),
     };
     this.request = {
