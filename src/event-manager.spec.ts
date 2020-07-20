@@ -246,7 +246,7 @@ describe('EventManager', () => {
       await eventManager.sendSync(event, path);
     } catch (ex) {
       expect(fetch.called()).to.be.true;
-      expect(ex).to.have.property('message', 'Unauthorized');
+      expect(ex).to.have.property('message', 'status: 401, response: ');
     } finally {
       fetch.restore();
     }
@@ -266,7 +266,7 @@ describe('EventManager', () => {
       await eventManager.sendSync(event, path);
     } catch (ex) {
       expect(fetch.called()).to.be.true;
-      expect(ex).to.have.property('message', 'Internal Server Error');
+      expect(ex).to.have.property('message', 'status: 500, response: ');
     } finally {
       fetch.restore();
     }
