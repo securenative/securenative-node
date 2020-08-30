@@ -33,6 +33,14 @@ export default class SDKEvent implements IEvent {
   constructor(event: EventOptions, options: SecureNativeOptions) {
     Logger.debug('Building SDK event');
 
+    if (!event.userId || event.userId === '') {
+      throw new Error('Invalid event structure; User Id is missing');
+    }
+
+    if (!event.event || event.event === '') {
+      throw new Error('Invalid event structure; Event Type is missing');
+    }
+
     const context = event.context || {};
     const decryptedToken = decrypt(context?.clientToken, options.apiKey);
     Logger.debug('Decrypted client token', decryptedToken);
