@@ -18,9 +18,7 @@ describe('SdkEvent', () => {
             event: EventType.LOG_IN,
             userId: null,
         };
-
-        const event = new SDKEvent(eventOpts, options);
-        expect(() => event).to.throw('Invalid event structure; User Id is missing');
+        expect(() => new SDKEvent(eventOpts, options)).to.throw('Invalid event structure; User Id is missing');
     });
 
     it('Should fail to create new sdk event when event type is null', () => {
@@ -32,8 +30,6 @@ describe('SdkEvent', () => {
             event: null,
             userId: '1234',
         };
-
-        const event = new SDKEvent(eventOpts, options);
-        expect(() => event).to.throw('Invalid event structure; Event Type is missing');
+        expect(() => new SDKEvent(eventOpts, options)).to.throw('Invalid event structure; Event Type is missing');
     });
 });
