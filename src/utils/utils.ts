@@ -8,6 +8,7 @@ import { RequestContext } from '../types/request-context';
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http2';
 import { PackageManager } from '../package-manager';
 import { join } from 'path';
+import { SecureNativeOptions } from "../types/securenative-options";
 
 const ALGORITHM = 'aes-256-cbc';
 const BLOCK_SIZE = 16;
@@ -15,29 +16,35 @@ const AES_KEY_SIZE = 32;
 const ipHeaders = ['x-forwarded-for', 'x-client-ip', 'x-real-ip', 'x-forwarded', 'x-cluster-client-ip', 'forwarded-for', 'forwarded', 'via'];
 const PACKAGE_FILE_NAME = 'package.json';
 
-const clientIpFromRequest = (req: any) => {
+const clientIpFromRequest = (req: any, options: SecureNativeOptions) => {
   if (!req) {
     return '';
   }
   let bestCandidate;
 
+  if (options && options.proxyHeaders.length > 0) {
+    for (let i = 0; i < options.proxyHeaders.length; ++i) {
+      const header = req.headers[options.proxyHeaders[i]] || '';
+      const candidate = extractIp(header)
+      if (candidate != null) {
+        return candidate
+      }
+      if (bestCandidate === undefined) {
+        bestCandidate = list.find((x) => !isLoopback(x));
+      }
+    }
+  }
+
   if (req.headers) {
     const headers = req.headers;
     for (let i = 0; i < ipHeaders.length; ++i) {
       const header = headers[ipHeaders[i]] || '';
-      if (typeof header === 'string') {
-        const list = header
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean)
-          .filter((x) => isV4Format(x) || isV6Format(x));
-        const candidate = list.find((c) => isPublic(c));
-        if (candidate !== undefined) {
-          return candidate;
-        }
-        if (bestCandidate === undefined) {
-          bestCandidate = list.find((x) => !isLoopback(x));
-        }
+      const candidate = extractIp(header)
+      if (candidate != null) {
+        return candidate
+      }
+      if (bestCandidate === undefined) {
+        bestCandidate = list.find((x) => !isLoopback(x));
       }
     }
   }
@@ -70,6 +77,21 @@ const remoteIpFromRequest = (req: any) => {
     return req.connection.remoteAddress;
   }
   return '';
+};
+
+const extractIp = (header: any) => {
+  if (typeof header === 'string') {
+    const list = header
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .filter((x) => isV4Format(x) || isV6Format(x));
+    const candidate = list.find((c) => isPublic(c));
+    if (candidate !== undefined) {
+      return candidate;
+    }
+    return null
+  }
 };
 
 const headersFromRequest = (req: any): IncomingHttpHeaders =>
@@ -112,7 +134,7 @@ const secureheaderFromRequest = (req: any) => {
 };
 
 // extract context from request
-const contextFromRequest = (req: any): RequestContext => {
+const contextFromRequest = (req: any, options: SecureNativeOptions): RequestContext => {
   const { url = '', method = '', body = '' } = req || {};
 
   return {
@@ -121,7 +143,7 @@ const contextFromRequest = (req: any): RequestContext => {
     body: JSON.stringify(body),
     clientToken: cookieValueFromRequest(req, '_sn') || secureheaderFromRequest(req) || '{}',
     headers: headersFromRequest(req),
-    ip: clientIpFromRequest(req),
+    ip: clientIpFromRequest(req, options),
     remoteIp: remoteIpFromRequest(req),
   };
 };
@@ -267,6 +289,10 @@ const getSDKVersion = () => {
   return agentPkg && agentPkg.version;
 };
 
+function toArray(str, defaultValue: string[]) {
+  return str.splice(",") || defaultValue;
+}
+
 export {
   clientIpFromRequest,
   remoteIpFromRequest,
@@ -289,4 +315,5 @@ export {
   contextFromRequest,
   mergeRequestContexts,
   getSDKVersion,
+  toArray,
 };

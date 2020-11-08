@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { SecureNativeOptions } from './types/securenative-options';
 import { Logger } from './logger';
-import { toNumber, toBoolean, toEnum, isEnum } from './utils/utils';
+import { toArray, toNumber, toBoolean, toEnum, isEnum } from './utils/utils';
 import FailoveStrategy from './enums/failover-strategy';
 
 const CONFIG_FILE = 'securenative.json';
@@ -18,6 +18,7 @@ const configMap: Object = {
   SECURENATIVE_DISABLE: { name: 'disable', type: 'boolean' },
   SECURENATIVE_LOG_LEVEL: { name: 'logLevel', type: 'string' },
   SECURENATIVE_FAILOVER_STRATEGY: { name: 'failoverStrategy', type: 'string' },
+  SECURENATIVE_PROXY_HEADERS: { name: 'proxyHeaders', type: 'array' },
 };
 
 export default class ConfigurationManager {
@@ -72,6 +73,7 @@ export default class ConfigurationManager {
         ? fileConfig['failoverStrategy']
         : toEnum(FailoveStrategy, process.env.SECURENATIVE_FAILOVER_STRATEGY, FailoveStrategy.FailOpen),
       minSupportedVersion: '4.9.1',
+      proxyHeaders: fileConfig['proxyHeaders'] || toArray(process.env.SECURENATIVE_PROXY_HEADERS, null),
     };
   }
 

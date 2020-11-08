@@ -11,5 +11,6 @@ export type SecureNativeOptions = {
   disable?: boolean;
   logLevel?: string;
   failoverStrategy?: FailoveStrategy;
+  proxyHeaders?: string[];
   minSupportedVersion?: string;
 };
