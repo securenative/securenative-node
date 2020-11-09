@@ -39,6 +39,7 @@ const clientIpFromRequest = (req: any, options: SecureNativeOptions) => {
                 }
             }
         }
+    }
 
     if (req.headers) {
         const headers = req.headers;
