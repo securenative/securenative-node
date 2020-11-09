@@ -1,7 +1,6 @@
 import { parse } from 'cookie';
 import { isV4Format, isV6Format, isPublic, isLoopback, isEqual } from 'ip';
-import { createDecipheriv, randomBytes, createCipheriv } from 'crypto';
-import { createHash } from 'crypto';
+import { createHash, createDecipheriv, randomBytes, createCipheriv } from 'crypto';
 import { KeyValuePair } from '../types/key-value-pair';
 import { Logger } from '../logger';
 import { RequestContext } from '../types/request-context';

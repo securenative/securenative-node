@@ -24,6 +24,7 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_DISABLE: false,
       SECURENATIVE_LOG_LEVEL: 'fatal',
       SECURENATIVE_FAILOVER_STRATEGY: 'fail-closed',
+      SECURENATIVE_PROXY_HEADERS: ['CF-Connecting-IP', 'Some-Random-IP']
     };
 
     sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
@@ -41,6 +42,7 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('logLevel', 'fatal');
     expect(options).to.have.property('maxEvents', 100);
     expect(options).to.have.property('timeout', 1500);
+    expect(options).to.have.property('proxyHeaders', ['CF-Connecting-IP', 'Some-Random-IP']);
 
     sinon.restore();
   });
@@ -129,6 +131,7 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('maxEvents', 1000);
     expect(options).to.have.property('minSupportedVersion', '4.9.1');
     expect(options).to.have.property('timeout', 1500);
+    expect(options).to.have.property('proxyHeaders', null);
   });
 
   it('Should get config via env variables', () => {
@@ -143,8 +146,10 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_DISABLE: false,
       SECURENATIVE_LOG_LEVEL: 'fatal',
       SECURENATIVE_FAILOVER_STRATEGY: 'fail-closed',
+      SECURENATIVE_PROXY_HEADERS: 'CF-Connecting-IP,Some-Random-IP',
     };
 
+    const proxyHeaders = ['CF-Connecting-IP', 'Some-Random-IP']
     const strConfig = fromEntries(Object.entries(config).map(([key, val]) => [key, val.toString()]));
     const restoreEnv = mockedEnv(strConfig);
 
@@ -163,6 +168,7 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('logLevel', config.SECURENATIVE_LOG_LEVEL);
     expect(options).to.have.property('maxEvents', config.SECURENATIVE_MAX_EVENTS);
     expect(options).to.have.property('timeout', config.SECURENATIVE_TIMEOUT);
+    expect(options).to.have.property('proxyHeaders', proxyHeaders);
 
     restoreEnv();
   });
@@ -180,6 +186,7 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_DISABLE: false,
       SECURENATIVE_LOG_LEVEL: 'fatal',
       SECURENATIVE_FAILOVER_STRATEGY: 'fail-closed',
+      SECURENATIVE_PROXY_HEADERS: 'CF-Connecting-IP'
     };
 
     sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
@@ -188,6 +195,7 @@ describe('ConfigurationManager', () => {
     //update config
     ConfigurationManager.loadConfig(path);
 
+    const proxyHeaders = ['CF-Connecting-IP']
     const options = ConfigurationManager.getConfig();
     expect(options).to.not.be.null;
     expect(options).to.have.property('apiKey', 'SOME_API_KEY');
@@ -200,6 +208,7 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('logLevel', 'fatal');
     expect(options).to.have.property('maxEvents', 100);
     expect(options).to.have.property('timeout', 1500);
+    expect(options).to.have.property('proxyHeaders', proxyHeaders);
 
     sinon.restore();
   });
@@ -217,6 +226,7 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_DISABLE: false,
       SECURENATIVE_LOG_LEVEL: 'fatal',
       SECURENATIVE_FAILOVER_STRATEGY: 'fail-closed',
+      SECURENATIVE_PROXY_HEADERS: 'CF-Connecting-IP'
     };
 
     const envConfig = {
@@ -230,10 +240,12 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_DISABLE: true,
       SECURENATIVE_LOG_LEVEL: 'error',
       SECURENATIVE_FAILOVER_STRATEGY: 'fail-open',
+      SECURENATIVE_PROXY_HEADERS: 'Some-Random-IP'
     };
 
     const strConfig = fromEntries(Object.entries(envConfig).map(([key, val]) => [key, val.toString()]));
     const restoreEnv = mockedEnv(strConfig);
+    const proxyHeaders = ['CF-Connecting-IP']
 
     sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
     sinon.stub(fs, 'readFileSync').withArgs(path, 'utf-8').returns(JSON.stringify(fileConfig));
@@ -253,6 +265,7 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('logLevel', fileConfig.SECURENATIVE_LOG_LEVEL);
     expect(options).to.have.property('maxEvents', fileConfig.SECURENATIVE_MAX_EVENTS);
     expect(options).to.have.property('timeout', fileConfig.SECURENATIVE_TIMEOUT);
+    expect(options).to.have.property('proxyHeaders', proxyHeaders);
 
     restoreEnv();
     sinon.restore();
