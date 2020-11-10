@@ -2,6 +2,7 @@ import chai from 'chai';
 import { SecureNativeOptions } from "./types/securenative-options";
 import { clientIpFromRequest } from "./utils/utils";
 import chaiAsPromised from "chai-as-promised";
+import httpMocks from 'node-mocks-http';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -13,7 +14,9 @@ describe('RequestUtils', () => {
         };
 
         const ip = '203.0.113.1';
-        const req = {headers: [{'CF-Connecting-IP': ip}]};
+        const req  = httpMocks.createRequest({
+            headers: {'CF-Connecting-IP': ip}
+        });
 
         const clientIp = clientIpFromRequest(req, options);
         expect(clientIp).to.eq(ip);
@@ -25,7 +28,9 @@ describe('RequestUtils', () => {
         };
 
         const ip = 'f71f:5bf9:25ff:1883:a8c4:eeff:7b80:aa2d';
-        const req = {headers: [{'CF-Connecting-IP': ip}]};
+        const req  = httpMocks.createRequest({
+            headers: {'CF-Connecting-IP': ip}
+        });
 
         const clientIp = clientIpFromRequest(req, options);
         expect(clientIp).to.eq(ip);
@@ -36,10 +41,13 @@ describe('RequestUtils', () => {
             proxyHeaders: ['CF-Connecting-IP']
         };
 
-        const ips = ['141.246.115.116', '203.0.113.1', '12.34.56.3'];
-        const req = {headers: [{'CF-Connecting-IP': ips}]};
+        const ip = '141.246.115.116, 203.0.113.1, 12.34.56.3'
+        const expected = '141.246.115.116';
+        const req  = httpMocks.createRequest({
+            headers: {'CF-Connecting-IP': ip}
+        });
 
         const clientIp = clientIpFromRequest(req, options);
-        expect(clientIp).to.eq(ips[0]);
+        expect(clientIp).to.eq(expected);
     });
 });
