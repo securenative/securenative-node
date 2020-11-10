@@ -42,7 +42,9 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('logLevel', 'fatal');
     expect(options).to.have.property('maxEvents', 100);
     expect(options).to.have.property('timeout', 1500);
-    expect(options).to.have.property('proxyHeaders', ['CF-Connecting-IP', 'Some-Random-IP']);
+    expect(options.proxyHeaders.length).to.eq(2);
+    expect(options.proxyHeaders[0]).to.eq('CF-Connecting-IP');
+    expect(options.proxyHeaders[1]).to.eq('Some-Random-IP');
 
     sinon.restore();
   });
@@ -149,7 +151,6 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_PROXY_HEADERS: 'CF-Connecting-IP,Some-Random-IP',
     };
 
-    const proxyHeaders = ['CF-Connecting-IP', 'Some-Random-IP']
     const strConfig = fromEntries(Object.entries(config).map(([key, val]) => [key, val.toString()]));
     const restoreEnv = mockedEnv(strConfig);
 
@@ -168,7 +169,7 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('logLevel', config.SECURENATIVE_LOG_LEVEL);
     expect(options).to.have.property('maxEvents', config.SECURENATIVE_MAX_EVENTS);
     expect(options).to.have.property('timeout', config.SECURENATIVE_TIMEOUT);
-    expect(options).to.have.property('proxyHeaders', proxyHeaders);
+    expect(options).to.have.property('proxyHeaders', config.SECURENATIVE_PROXY_HEADERS);
 
     restoreEnv();
   });
@@ -186,7 +187,7 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_DISABLE: false,
       SECURENATIVE_LOG_LEVEL: 'fatal',
       SECURENATIVE_FAILOVER_STRATEGY: 'fail-closed',
-      SECURENATIVE_PROXY_HEADERS: 'CF-Connecting-IP'
+      SECURENATIVE_PROXY_HEADERS: ['CF-Connecting-IP']
     };
 
     sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
@@ -208,7 +209,8 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('logLevel', 'fatal');
     expect(options).to.have.property('maxEvents', 100);
     expect(options).to.have.property('timeout', 1500);
-    expect(options).to.have.property('proxyHeaders', proxyHeaders);
+    expect(options.proxyHeaders.length).to.eq(1);
+    expect(options.proxyHeaders[0]).to.eq('CF-Connecting-IP');
 
     sinon.restore();
   });
@@ -245,7 +247,7 @@ describe('ConfigurationManager', () => {
 
     const strConfig = fromEntries(Object.entries(envConfig).map(([key, val]) => [key, val.toString()]));
     const restoreEnv = mockedEnv(strConfig);
-    const proxyHeaders = ['CF-Connecting-IP']
+    const proxyHeaders = 'Some-Random-IP'
 
     sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
     sinon.stub(fs, 'readFileSync').withArgs(path, 'utf-8').returns(JSON.stringify(fileConfig));

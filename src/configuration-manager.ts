@@ -18,7 +18,7 @@ const configMap: Object = {
   SECURENATIVE_DISABLE: { name: 'disable', type: 'boolean' },
   SECURENATIVE_LOG_LEVEL: { name: 'logLevel', type: 'string' },
   SECURENATIVE_FAILOVER_STRATEGY: { name: 'failoverStrategy', type: 'string' },
-  SECURENATIVE_PROXY_HEADERS: { name: 'proxyHeaders', type: 'array' },
+  SECURENATIVE_PROXY_HEADERS: { name: 'proxyHeaders', type: 'object' },
 };
 
 export default class ConfigurationManager {

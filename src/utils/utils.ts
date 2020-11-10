@@ -288,7 +288,10 @@ const getSDKVersion = () => {
 };
 
 function toArray(str, defaultValue: string[]) {
-    return str.splice(",") || defaultValue;
+    if (str !== undefined) {
+        return str.slice(",")
+    }
+    return defaultValue;
 }
 
 export {
