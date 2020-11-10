@@ -80,7 +80,7 @@ instance. Make sure you build event with the EventBuilder:
 
 
 ```js
-import { SecureNative, EventTypes, contextFromRequest } from "@securenative/sdk";
+import { SecureNative, EventTypes } from "@securenative/sdk";
 
 secureNative.track({
   event: EventTypes.LOG_IN,
@@ -90,7 +90,7 @@ secureNative.track({
     email: 'name@gmail.com',
     phone: '+1234567890'
   },
-  context: contextFromRequest(req)
+  context: secureNative.fromRequest(req)
 });
 ``` 
 
@@ -126,7 +126,7 @@ secureNative.track({
       email: 'name@gmail.com',
       phone: '+1234567890'
     },
-    context: contextFromRequest(req)
+    context: secureNative.fromRequest(req)
   })
 
   verifyResult.riskLevel // Low, Medium, High
@@ -134,6 +134,35 @@ secureNative.track({
   verifyResult.triggers // ["TOR", "New IP", "New City"]
 }
 ```
+
+## Extract proxy headers
+
+You can specify custom header keys to allow extraction of client ip from different providers.
+This example demonstrates the usage of proxy headers for ip extraction from Cloudflare.
+
+### Option 1: Using config file
+```json
+{
+    "SECURENATIVE_API_KEY": "YOUR_API_KEY",
+    "SECURENATIVE_PROXY_HEADERS": ["CF-Connecting-IP"]
+}
+```
+
+Initialize sdk as shown above.
+
+### Options 2: Using ConfigurationBuilder
+
+```js
+import { SecureNativeOptions } from "@securenative/sdk";
+
+const options: SecureNativeOptions = {
+    apiKey: 'YOUR_API_KEY',
+    maxEvents: 10,
+    proxyHeaders: ['CF-Connecting-IP']
+};
+
+SecureNative.init(options);
+``` 
 
 ## Configuration
 
@@ -147,7 +176,8 @@ secureNative.track({
 | SECURENATIVE_TIMEOUT            | number  | true     | 1500                                      | API call timeout in ms                            |
 | SECURENATIVE_AUTO_SEND          | Boolean | true     | true                                      | Should api auto send the events                   |
 | SECURENATIVE_DISABLE            | Boolean | true     | true                                      | Allow to disable agent functionality              |
-| SECURENATIVE_LOG_LEVEL          | string | true     | fatal                                     | Displays debug info to stdout                     |
+| SECURENATIVE_LOG_LEVEL          | string  | true     | fatal                                     | Displays debug info to stdout                     |
+| SECURENATIVE_PROXY_HEADER       | array   | true     | none                                      | Array of proxy headers keys                       |
 
 ## Compatibility
 
