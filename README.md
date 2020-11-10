@@ -153,7 +153,7 @@ Initialize sdk as shown above.
 ### Options 2: Using ConfigurationBuilder
 
 ```js
-import { SecureNativeOptions } from "@securenative/sdk";
+import { SecureNativeOptions, SecureNative } from "@securenative/sdk";
 
 const options: SecureNativeOptions = {
     apiKey: 'YOUR_API_KEY',
