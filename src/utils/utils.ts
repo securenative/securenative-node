@@ -21,7 +21,7 @@ const clientIpFromRequest = (req: any, options: SecureNativeOptions) => {
     }
     let bestCandidate;
 
-    if (options && options.proxyHeaders.length > 0) {
+    if (options && options.proxyHeaders && options.proxyHeaders.length > 0) {
         const headers = req.headers;
         for (let i = 0; i < options.proxyHeaders.length; ++i) {
             const header = headers[options.proxyHeaders[i]] || headers[options.proxyHeaders[i].toLowerCase()] ||  '';
