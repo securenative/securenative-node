@@ -13,6 +13,7 @@ const ALGORITHM = 'aes-256-cbc';
 const BLOCK_SIZE = 16;
 const AES_KEY_SIZE = 32;
 const ipHeaders = ['x-forwarded-for', 'x-client-ip', 'x-real-ip', 'x-forwarded', 'x-cluster-client-ip', 'forwarded-for', 'forwarded', 'via'];
+const piiHeaders =['authorization', 'access_token', 'apikey', 'password',  'passwd', 'secret', 'api_key'];
 const PACKAGE_FILE_NAME = 'package.json';
 
 const clientIpFromRequest = (req: any, options: SecureNativeOptions) => {
@@ -100,7 +101,9 @@ const headersFromRequest = (req: any): IncomingHttpHeaders =>
             return {key, value: encodeURI(value)};
         })
         .reduce((obj: any, item: KeyValuePair) => {
-            obj[item.key] = item.value;
+            if (!piiHeaders.includes(item.key) || piiHeaders.includes(item.key.toUpperCase())) {
+                obj[item.key] = item.value;
+            }
             return obj;
         }, {});
 
@@ -111,7 +114,9 @@ const headersFromResponse = (res: any): OutgoingHttpHeaders =>
             return {key, value: encodeURI(value)};
         })
         .reduce((obj: any, item: KeyValuePair) => {
-            obj[item.key] = item.value;
+            if (!piiHeaders.includes(item.key) || piiHeaders.includes(item.key.toUpperCase())) {
+                obj[item.key] = item.value;
+            }
             return obj;
         }, {});
 
