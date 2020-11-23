@@ -101,7 +101,7 @@ const headersFromRequest = (req: any): IncomingHttpHeaders =>
             return {key, value: encodeURI(value)};
         })
         .reduce((obj: any, item: KeyValuePair) => {
-            if (!piiHeaders.includes(item.key) || piiHeaders.includes(item.key.toUpperCase())) {
+            if (!piiHeaders.includes(item.key) && piiHeaders.includes(item.key.toUpperCase())) {
                 obj[item.key] = item.value;
             }
             return obj;
@@ -114,7 +114,7 @@ const headersFromResponse = (res: any): OutgoingHttpHeaders =>
             return {key, value: encodeURI(value)};
         })
         .reduce((obj: any, item: KeyValuePair) => {
-            if (!piiHeaders.includes(item.key) || piiHeaders.includes(item.key.toUpperCase())) {
+            if (!piiHeaders.includes(item.key) && piiHeaders.includes(item.key.toUpperCase())) {
                 obj[item.key] = item.value;
             }
             return obj;
