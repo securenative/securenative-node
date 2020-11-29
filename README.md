@@ -164,6 +164,35 @@ const options: SecureNativeOptions = {
 SecureNative.init(options);
 ``` 
 
+## Remove PII Data From Headers
+
+By default SecureNative SDK remove any known pii headers from the received request.
+We also support using custom pii headers and regex matching via configuration, for example:
+
+### Option 1: Using config file
+```json
+{
+    "SECURENATIVE_API_KEY": "YOUR_API_KEY",
+    "SECURENATIVE_PII_HEADERS": ["apiKey"]
+}
+```
+
+Initialize sdk as shown above.
+
+### Options 2: Using ConfigurationBuilder
+
+```js
+import { SecureNativeOptions, SecureNative } from "@securenative/sdk";
+
+const options: SecureNativeOptions = {
+    apiKey: 'YOUR_API_KEY',
+    maxEvents: 10,
+    pii_regex_pattern: '/http_auth_/i'
+};
+
+SecureNative.init(options);
+``` 
+
 ## Configuration
 
 | Option                          | Type    | Optional | Default Value                             | Description                                       |
