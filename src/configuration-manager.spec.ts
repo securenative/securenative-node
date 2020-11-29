@@ -130,10 +130,12 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('failoverStrategy', 'fail-open');
     expect(options).to.have.property('interval', 1000);
     expect(options).to.have.property('logLevel', 'fatal');
+    expect(options).to.have.property('piiRegexPattern', null);
     expect(options).to.have.property('maxEvents', 1000);
     expect(options).to.have.property('minSupportedVersion', '4.9.1');
     expect(options).to.have.property('timeout', 1500);
     expect(options).to.have.property('proxyHeaders', null);
+    expect(options).to.have.property('piiHeaders', null);
   });
 
   it('Should get config via env variables', () => {
@@ -149,6 +151,7 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_LOG_LEVEL: 'fatal',
       SECURENATIVE_FAILOVER_STRATEGY: 'fail-closed',
       SECURENATIVE_PROXY_HEADERS: 'CF-Connecting-IP,Some-Random-IP',
+      SECURENATIVE_PII_HEADERS: 'authentication,apiKey',
     };
 
     const strConfig = fromEntries(Object.entries(config).map(([key, val]) => [key, val.toString()]));
@@ -170,6 +173,7 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('maxEvents', config.SECURENATIVE_MAX_EVENTS);
     expect(options).to.have.property('timeout', config.SECURENATIVE_TIMEOUT);
     expect(options).to.have.property('proxyHeaders', config.SECURENATIVE_PROXY_HEADERS);
+    expect(options).to.have.property('piiHeaders', config.SECURENATIVE_PII_HEADERS);
 
     restoreEnv();
   });
@@ -187,7 +191,8 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_DISABLE: false,
       SECURENATIVE_LOG_LEVEL: 'fatal',
       SECURENATIVE_FAILOVER_STRATEGY: 'fail-closed',
-      SECURENATIVE_PROXY_HEADERS: ['CF-Connecting-IP']
+      SECURENATIVE_PROXY_HEADERS: ['CF-Connecting-IP'],
+      SECURENATIVE_PII_HEADERS: ['authentication']
     };
 
     sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
@@ -196,8 +201,9 @@ describe('ConfigurationManager', () => {
     //update config
     ConfigurationManager.loadConfig(path);
 
-    const proxyHeaders = ['CF-Connecting-IP']
     const options = ConfigurationManager.getConfig();
+    const [proxyHeaders] = options.proxyHeaders;
+    const [piiHeaders] = options.piiHeaders;
     expect(options).to.not.be.null;
     expect(options).to.have.property('apiKey', 'SOME_API_KEY');
     expect(options).to.have.property('apiUrl', 'SOME_API_URL');
@@ -210,7 +216,8 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('maxEvents', 100);
     expect(options).to.have.property('timeout', 1500);
     expect(options.proxyHeaders.length).to.eq(1);
-    expect(options.proxyHeaders[0]).to.eq('CF-Connecting-IP');
+    expect(proxyHeaders).to.eq('CF-Connecting-IP');
+    expect(piiHeaders).to.eq('authentication');
 
     sinon.restore();
   });
@@ -228,7 +235,8 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_DISABLE: false,
       SECURENATIVE_LOG_LEVEL: 'fatal',
       SECURENATIVE_FAILOVER_STRATEGY: 'fail-closed',
-      SECURENATIVE_PROXY_HEADERS: 'CF-Connecting-IP'
+      SECURENATIVE_PROXY_HEADERS: 'CF-Connecting-IP',
+      SECURENATIVE_PII_REGEX_PATTERN: '/http_auth_/i'
     };
 
     const envConfig = {
@@ -242,12 +250,14 @@ describe('ConfigurationManager', () => {
       SECURENATIVE_DISABLE: true,
       SECURENATIVE_LOG_LEVEL: 'error',
       SECURENATIVE_FAILOVER_STRATEGY: 'fail-open',
-      SECURENATIVE_PROXY_HEADERS: 'Some-Random-IP'
+      SECURENATIVE_PROXY_HEADERS: 'Some-Random-IP',
+      SECURENATIVE_PII_REGEX_PATTERN: '/http_auth_env_/i'
     };
 
     const strConfig = fromEntries(Object.entries(envConfig).map(([key, val]) => [key, val.toString()]));
     const restoreEnv = mockedEnv(strConfig);
     const proxyHeaders = 'Some-Random-IP'
+    const piiRegexPattern = '/http_auth_env_/i'
 
     sinon.stub(fs, 'existsSync').withArgs(path).returns(true);
     sinon.stub(fs, 'readFileSync').withArgs(path, 'utf-8').returns(JSON.stringify(fileConfig));
@@ -267,6 +277,7 @@ describe('ConfigurationManager', () => {
     expect(options).to.have.property('logLevel', fileConfig.SECURENATIVE_LOG_LEVEL);
     expect(options).to.have.property('maxEvents', fileConfig.SECURENATIVE_MAX_EVENTS);
     expect(options).to.have.property('timeout', fileConfig.SECURENATIVE_TIMEOUT);
+    expect(options).to.have.property('piiRegexPattern', piiRegexPattern);
     expect(options).to.have.property('proxyHeaders', proxyHeaders);
 
     restoreEnv();

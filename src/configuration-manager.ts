@@ -19,6 +19,8 @@ const configMap: Object = {
   SECURENATIVE_LOG_LEVEL: { name: 'logLevel', type: 'string' },
   SECURENATIVE_FAILOVER_STRATEGY: { name: 'failoverStrategy', type: 'string' },
   SECURENATIVE_PROXY_HEADERS: { name: 'proxyHeaders', type: 'object' },
+  SECURENATIVE_PII_HEADERS: { name: 'piiHeaders', type: 'object' },
+  SECURENATIVE_PII_REGEX_PATTERN: { name: 'piiRegexPattern', type: 'object' },
 };
 
 export default class ConfigurationManager {
@@ -74,6 +76,8 @@ export default class ConfigurationManager {
         : toEnum(FailoveStrategy, process.env.SECURENATIVE_FAILOVER_STRATEGY, FailoveStrategy.FailOpen),
       minSupportedVersion: '4.9.1',
       proxyHeaders: fileConfig['proxyHeaders'] || toArray(process.env.SECURENATIVE_PROXY_HEADERS, null),
+      piiHeaders: fileConfig['piiHeaders'] || toArray(process.env.SECURENATIVE_PII_HEADERS, null),
+      piiRegexPattern: fileConfig['piiRegexPattern'] || process.env.SECURENATIVE_PII_REGEX_PATTERN || null,
     };
   }
 

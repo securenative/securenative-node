@@ -12,5 +12,7 @@ export type SecureNativeOptions = {
   logLevel?: string;
   failoverStrategy?: FailoveStrategy;
   proxyHeaders?: string[];
+  piiHeaders?: string[];
+  piiRegexPattern?: string;
   minSupportedVersion?: string;
 };
