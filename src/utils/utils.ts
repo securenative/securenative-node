@@ -23,21 +23,26 @@ const clientIpFromRequest = (req: any, options: SecureNativeOptions) => {
     let bestCandidate;
 
     if (options && options.proxyHeaders && options.proxyHeaders.length > 0) {
-        const headers = req.headers;
-        for (let i = 0; i < options.proxyHeaders.length; ++i) {
-            const header = headers[options.proxyHeaders[i]] || headers[options.proxyHeaders[i].toLowerCase()] ||  '';
-            if (typeof header === 'string') {
-                const list = header
-                    .split(',')
-                    .map((s) => s.trim())
-                    .filter(Boolean)
-                    .filter((x) => isV4Format(x) || isV6Format(x));
-                const candidate = list.find((c) => isPublic(c));
-                if (candidate !== undefined) {
-                    return candidate;
-                }
-                if (bestCandidate === undefined) {
-                    bestCandidate = list.find((x) => !isLoopback(x));
+        if (req.headers) {
+            const headers = req.headers;
+            for (let i = 0; i < options.proxyHeaders.length; ++i) {
+                const header = headers[options.proxyHeaders[i]] || headers[options.proxyHeaders[i].toLowerCase()] || '';
+                if (typeof header === 'string') {
+                    const list = header
+                        .split(',')
+                        .map((s) => s.trim())
+                        .filter(Boolean)
+                        .filter((x) => isV4Format(x) || isV6Format(x));
+                    const candidate = list.find((c) => isPublic(c));
+                    if (candidate !== undefined) {
+                        return candidate;
+                    }
+                    if (bestCandidate === undefined) {
+                        bestCandidate = list.find((x) => !isLoopback(x));
+                        if (bestCandidate !== undefined) {
+                            return candidate;
+                        }
+                    }
                 }
             }
         }
