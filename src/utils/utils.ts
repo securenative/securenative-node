@@ -40,7 +40,7 @@ const clientIpFromRequest = (req: any, options: SecureNativeOptions) => {
                     if (bestCandidate === undefined) {
                         bestCandidate = list.find((x) => !isLoopback(x));
                         if (bestCandidate !== undefined) {
-                            return candidate;
+                            return bestCandidate;
                         }
                     }
                 }
@@ -64,6 +64,9 @@ const clientIpFromRequest = (req: any, options: SecureNativeOptions) => {
                 }
                 if (bestCandidate === undefined) {
                     bestCandidate = list.find((x) => !isLoopback(x));
+                    if (bestCandidate !== undefined) {
+                        return bestCandidate;
+                    }
                 }
             }
         }
