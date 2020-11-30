@@ -109,7 +109,7 @@ const headersFromRequest = (req: any, options: SecureNativeOptions): IncomingHtt
             return {key, value: encodeURI(value)};
         })
             .reduce((obj: any, item: KeyValuePair) => {
-                if (!options.piiHeaders.includes(item.key) && options.piiHeaders.includes(item.key.toUpperCase())) {
+                if (!options.piiHeaders.includes(item.key.toLowerCase()) && options.piiHeaders.includes(item.key.toUpperCase())) {
                     obj[item.key] = item.value;
                 }
                 return obj;
