@@ -11,6 +11,8 @@ import ModuleManager from './module-manager';
 import { IMiddleware } from './middleware/middleware';
 import { createMiddleware } from './middleware/midlleware-factory';
 import fetch from 'node-fetch';
+import { RequestContext } from "./types/request-context";
+import { contextFromRequest } from "./utils/utils";
 
 const PACKAGE_FILE_NAME = 'package.json';
 
@@ -72,6 +74,10 @@ export default class SecureNative {
       throw new Error('You need to init sdk first!');
     }
     return SecureNative.instance;
+  }
+
+  public fromRequest(req: any): RequestContext {
+    return contextFromRequest(req, this.options);
   }
 
   public track(opts: EventOptions) {
